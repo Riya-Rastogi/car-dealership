@@ -117,6 +117,9 @@ export const updateVehicleSchema = z
     message: "At least one field is required",
   });
 
+export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
+export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
+
 export const vehicleSortSchema = z.enum(["price_asc", "price_desc", "newest"]);
 
 export type VehicleSort = z.infer<typeof vehicleSortSchema>;

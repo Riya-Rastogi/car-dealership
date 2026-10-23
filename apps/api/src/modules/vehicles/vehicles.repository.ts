@@ -3,6 +3,8 @@ import { and, asc, count, desc, eq, gte, ilike, lte, or, type SQL } from "drizzl
 import { db } from "../../db/client.js";
 import { vehicles, type VehicleRow } from "../../db/schema.js";
 
+type NewVehicleRow = typeof vehicles.$inferInsert;
+
 /** Escapes LIKE metacharacters so a literal % or _ stays literal. */
 function likePattern(value: string): string {
   return `%${value.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
@@ -44,6 +46,16 @@ function buildWhere(query: VehicleListQuery): SQL | undefined {
 }
 
 export const vehicleRepository = {
+  async create(input: NewVehicleRow): Promise<VehicleRow> {
+    const [vehicle] = await db.insert(vehicles).values(input).returning();
+
+    if (!vehicle) {
+      throw new Error("Insert into vehicles returned no row");
+    }
+
+    return vehicle;
+  },
+
   async findById(id: string): Promise<VehicleRow | null> {
     const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
     return vehicle ?? null;
