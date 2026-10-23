@@ -1,16 +1,40 @@
+import { Route, Routes } from "react-router-dom";
+import { PublicOnly, Protected } from "./auth/guards.js";
+import { Layout } from "./components/Layout.js";
+import { DashboardPage } from "./pages/DashboardPage.js";
+import { LoginPage } from "./pages/LoginPage.js";
+import { NotFoundPage } from "./pages/NotFoundPage.js";
+import { RegisterPage } from "./pages/RegisterPage.js";
+
 export function App() {
   return (
-    <main className="shell">
-      <p className="eyebrow">Car Dealership Inventory</p>
-      <h1>Inventory, without the guesswork.</h1>
-      <p className="lede">
-        The API and workspace are running. Sign-in, the vehicle catalogue, and the admin console
-        land in the next phases.
-      </p>
-      <div className="status">
-        <span className="pulse" aria-hidden="true" />
-        Phase 0 scaffold
-      </div>
-    </main>
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <PublicOnly>
+            <LoginPage />
+          </PublicOnly>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicOnly>
+            <RegisterPage />
+          </PublicOnly>
+        }
+      />
+      <Route
+        element={
+          <Protected>
+            <Layout />
+          </Protected>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
