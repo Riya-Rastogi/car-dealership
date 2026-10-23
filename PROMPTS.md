@@ -28,3 +28,13 @@ D:\PLAN.md
 
 **Assistant:** began Phase 0 at `D:\car-dealership`, using npm workspaces because Bun is not
 installed, and a local PostgreSQL 16 because Docker is not installed.
+
+## 2026-10-23 - OpenCode, DeepSeek V4.1 Flash Free (continued)
+
+**User:** no further prompts; the agent continued executing PLAN.md.
+
+**Assistant:** completed Phase 0 (scaffold, health check, commit hook) and Phase 1 (register,
+login, `/me`, admin guard). Every feature landed as a failing test commit followed by a passing
+implementation commit. Test database is `dealer_test`; truncation refuses any database whose name
+does not end in `_test`.
+
