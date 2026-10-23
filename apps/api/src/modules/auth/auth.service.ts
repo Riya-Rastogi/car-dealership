@@ -1,5 +1,5 @@
-import { hash } from "@node-rs/argon2";
-import type { AuthResponse, PublicUser, RegisterInput } from "@dealer/shared";
+import { hash, verify } from "@node-rs/argon2";
+import type { AuthResponse, LoginInput, PublicUser, RegisterInput } from "@dealer/shared";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import type { UserRow } from "../../db/schema.js";
@@ -15,6 +15,7 @@ const ARGON2_OPTIONS = {
 };
 
 const EMAIL_TAKEN_MESSAGE = "An account with this email already exists";
+const INVALID_CREDENTIALS_MESSAGE = "Invalid email or password";
 
 function toPublicUser(user: UserRow): PublicUser {
   return {
@@ -63,5 +64,24 @@ export const authService = {
 
       throw error;
     }
+  },
+
+  async login(input: LoginInput): Promise<AuthResponse> {
+    const user = await userRepository.findByEmail(input.email);
+
+    if (!user) {
+      throw new AppError(401, "UNAUTHORIZED", INVALID_CREDENTIALS_MESSAGE);
+    }
+
+    const passwordMatches = await verify(user.passwordHash, input.password);
+
+    if (!passwordMatches) {
+      throw new AppError(401, "UNAUTHORIZED", INVALID_CREDENTIALS_MESSAGE);
+    }
+
+    return {
+      user: toPublicUser(user),
+      token: issueToken(user),
+    };
   },
 };
