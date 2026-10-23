@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# Git for Windows executes hooks with sh; CRLF breaks the shebang.
+scripts/commit-msg text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

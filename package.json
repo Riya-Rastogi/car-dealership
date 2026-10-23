@@ -1,0 +1,33 @@
+{
+  "name": "car-dealership",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @dealer/api",
+    "dev:api": "npm run dev --workspace @dealer/api",
+    "dev:web": "npm run dev --workspace @dealer/web",
+    "build": "npm run build --workspace @dealer/shared && npm run build --workspace @dealer/api && npm run build --workspace @dealer/web",
+    "test": "npm run build --workspace @dealer/shared && npm run test --workspaces --if-present",
+    "test:coverage": "npm run build --workspace @dealer/shared && npm run test:coverage --workspaces --if-present",
+    "typecheck": "npm run build --workspace @dealer/shared && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "node scripts/install-hooks.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "eslint": "^9.34.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
+  }
+}

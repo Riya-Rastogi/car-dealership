@@ -1,0 +1,26 @@
+#!/bin/sh
+# Reject commits that do not disclose AI assistance.
+# Override for genuinely human-only commits: ALLOW_NO_AI_TRAILER=1 git commit ...
+msg_file="$1"
+
+if grep -qiE '^Co-authored-by: .+ <[^>]+>$' "$msg_file"; then
+  exit 0
+fi
+
+if [ "$ALLOW_NO_AI_TRAILER" = "1" ]; then
+  exit 0
+fi
+
+cat >&2 <<'EOF'
+Commit rejected: missing AI co-author trailer.
+
+Add one line per AI tool used, after a blank line at the end of the message:
+
+  Co-authored-by: Tool Name <noreply@example.com>
+
+For a genuinely human-only commit, run:
+
+  ALLOW_NO_AI_TRAILER=1 git commit ...
+EOF
+
+exit 1
