@@ -1,6 +1,7 @@
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
+import { hashPassword } from "../lib/passwords.js";
 import { db, pool } from "./client.js";
-import { vehicles } from "./schema.js";
+import { users, vehicles } from "./schema.js";
 
 const photo = (id: string) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
@@ -42,6 +43,31 @@ const catalogue = [
   ["Tesla", "Model Y", "ev", 5_200_000, 2, 2023],
   ["Ford", "Bronco", "suv", 4_900_000, 1, 2023],
 ] as const;
+
+// Accounts for local demos. The admin is what makes the role-gated admin
+// screen testable without editing the database by hand.
+const demoAccounts = [
+  { email: "demo@autoline.dev", password: "demo1234", name: "Demo Driver", role: "customer" },
+  { email: "admin@autoline.dev", password: "admin1234", name: "Avery Admin", role: "admin" },
+] as const;
+
+for (const account of demoAccounts) {
+  const [existingUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, account.email))
+    .limit(1);
+
+  if (!existingUser) {
+    await db.insert(users).values({
+      email: account.email,
+      passwordHash: await hashPassword(account.password),
+      name: account.name,
+      role: account.role,
+    });
+    console.log(`Created ${account.role} account ${account.email}.`);
+  }
+}
 
 const [existing] = await db.select({ total: count() }).from(vehicles);
 
