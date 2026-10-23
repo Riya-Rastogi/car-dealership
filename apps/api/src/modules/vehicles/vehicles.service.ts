@@ -80,4 +80,16 @@ export const vehicleService = {
 
     return toVehicle(vehicle);
   },
+
+  async delete(id: string): Promise<void> {
+    if (!UUID_PATTERN.test(id)) {
+      throw notFound();
+    }
+
+    const deleted = await vehicleRepository.delete(id);
+
+    if (!deleted) {
+      throw notFound();
+    }
+  },
 };

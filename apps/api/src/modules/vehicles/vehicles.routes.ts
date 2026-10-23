@@ -7,7 +7,7 @@ import {
 } from "@dealer/shared";
 import { Router, type RequestHandler } from "express";
 import { parseOrThrow } from "../../lib/validation.js";
-import { requireAuth } from "../../middleware/auth.js";
+import { requireAdmin, requireAuth } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validate.js";
 import { vehicleService } from "./vehicles.service.js";
 
@@ -46,3 +46,8 @@ vehicleRouter.put(
     res.status(200).json({ vehicle });
   },
 );
+
+vehicleRouter.delete("/vehicles/:id", requireAuth, requireAdmin, async (req, res) => {
+  await vehicleService.delete(String(req.params.id));
+  res.status(204).end();
+});

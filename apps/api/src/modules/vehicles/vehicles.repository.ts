@@ -72,6 +72,15 @@ export const vehicleRepository = {
     return vehicle ?? null;
   },
 
+  async delete(id: string): Promise<boolean> {
+    const [vehicle] = await db
+      .delete(vehicles)
+      .where(eq(vehicles.id, id))
+      .returning({ id: vehicles.id });
+
+    return vehicle !== undefined;
+  },
+
   async list(query: VehicleListQuery): Promise<{ rows: VehicleRow[]; total: number }> {
     const where = buildWhere(query);
     const offset = (query.page - 1) * query.limit;
