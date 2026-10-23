@@ -1,5 +1,6 @@
 import type {
   CreateVehicleInput,
+  UpdateVehicleInput,
   Vehicle,
   VehicleListQuery,
   VehicleListResponse,
@@ -64,5 +65,19 @@ export const vehicleService = {
         totalPages: Math.ceil(total / query.limit),
       },
     };
+  },
+
+  async update(id: string, input: UpdateVehicleInput): Promise<Vehicle> {
+    if (!UUID_PATTERN.test(id)) {
+      throw notFound();
+    }
+
+    const vehicle = await vehicleRepository.update(id, input);
+
+    if (!vehicle) {
+      throw notFound();
+    }
+
+    return toVehicle(vehicle);
   },
 };

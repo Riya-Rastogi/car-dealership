@@ -4,6 +4,7 @@ import { db } from "../../db/client.js";
 import { vehicles, type VehicleRow } from "../../db/schema.js";
 
 type NewVehicleRow = typeof vehicles.$inferInsert;
+type UpdateVehicleRow = Partial<Omit<NewVehicleRow, "id" | "createdAt">>;
 
 /** Escapes LIKE metacharacters so a literal % or _ stays literal. */
 function likePattern(value: string): string {
@@ -58,6 +59,16 @@ export const vehicleRepository = {
 
   async findById(id: string): Promise<VehicleRow | null> {
     const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
+    return vehicle ?? null;
+  },
+
+  async update(id: string, input: UpdateVehicleRow): Promise<VehicleRow | null> {
+    const [vehicle] = await db
+      .update(vehicles)
+      .set({ ...input, updatedAt: new Date() })
+      .where(eq(vehicles.id, id))
+      .returning();
+
     return vehicle ?? null;
   },
 

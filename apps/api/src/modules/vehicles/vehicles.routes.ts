@@ -1,7 +1,9 @@
 import {
   createVehicleSchema,
+  updateVehicleSchema,
   vehicleListQuerySchema,
   type CreateVehicleInput,
+  type UpdateVehicleInput,
 } from "@dealer/shared";
 import { Router, type RequestHandler } from "express";
 import { parseOrThrow } from "../../lib/validation.js";
@@ -31,3 +33,16 @@ vehicleRouter.post("/vehicles", requireAuth, validateBody(createVehicleSchema), 
   const vehicle = await vehicleService.create(req.body as CreateVehicleInput);
   res.status(201).json({ vehicle });
 });
+
+vehicleRouter.put(
+  "/vehicles/:id",
+  requireAuth,
+  validateBody(updateVehicleSchema),
+  async (req, res) => {
+    const vehicle = await vehicleService.update(
+      String(req.params.id),
+      req.body as UpdateVehicleInput,
+    );
+    res.status(200).json({ vehicle });
+  },
+);
