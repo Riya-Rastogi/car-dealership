@@ -11,7 +11,7 @@ beforeEach(async () => {
   token = (await registerUser(app)).token;
 });
 
-function create(body: unknown, bearer = token) {
+function create(body: object, bearer = token) {
   return request(app).post("/api/vehicles").set("Authorization", `Bearer ${bearer}`).send(body);
 }
 
