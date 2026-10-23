@@ -1,18 +1,11 @@
-import { hash, verify } from "@node-rs/argon2";
 import type { AuthResponse, LoginInput, PublicUser, RegisterInput } from "@dealer/shared";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import type { UserRow } from "../../db/schema.js";
 import { AppError } from "../../lib/errors.js";
+import { hashPassword, verifyPassword } from "../../lib/passwords.js";
 import { isUniqueViolation } from "../../lib/pg-errors.js";
 import { userRepository } from "./auth.repository.js";
-
-// OWASP's baseline Argon2id configuration (19 MiB, 2 iterations, 1 lane).
-const ARGON2_OPTIONS = {
-  memoryCost: 19_456,
-  timeCost: 2,
-  parallelism: 1,
-};
 
 const EMAIL_TAKEN_MESSAGE = "An account with this email already exists";
 const INVALID_CREDENTIALS_MESSAGE = "Invalid email or password";
@@ -44,7 +37,7 @@ export const authService = {
       throw new AppError(409, "EMAIL_TAKEN", EMAIL_TAKEN_MESSAGE);
     }
 
-    const passwordHash = await hash(input.password, ARGON2_OPTIONS);
+    const passwordHash = await hashPassword(input.password);
 
     try {
       const user = await userRepository.create({
@@ -73,7 +66,7 @@ export const authService = {
       throw new AppError(401, "UNAUTHORIZED", INVALID_CREDENTIALS_MESSAGE);
     }
 
-    const passwordMatches = await verify(user.passwordHash, input.password);
+    const passwordMatches = await verifyPassword(user.passwordHash, input.password);
 
     if (!passwordMatches) {
       throw new AppError(401, "UNAUTHORIZED", INVALID_CREDENTIALS_MESSAGE);
