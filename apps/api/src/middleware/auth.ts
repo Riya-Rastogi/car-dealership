@@ -49,3 +49,21 @@ export const requireAuth: RequestHandler = (req, res, next) => {
     });
   }
 };
+
+/**
+ * Must run after requireAuth. The API enforces the role even when the UI has
+ * already hidden the control: hiding a button is not authorization.
+ */
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    res.status(403).json({
+      error: {
+        code: "FORBIDDEN",
+        message: "Admin access required",
+      },
+    });
+    return;
+  }
+
+  next();
+};
