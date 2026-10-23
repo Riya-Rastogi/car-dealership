@@ -17,6 +17,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    // Every file truncates the same dealer_test database, so files must not
+    // interleave. Workers within one file still run normally.
+    fileParallelism: false,
     globalSetup: ["./tests/global-setup.ts"],
     setupFiles: ["./tests/setup-db.ts"],
     env: {
