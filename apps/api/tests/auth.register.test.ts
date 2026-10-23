@@ -40,6 +40,21 @@ describe("POST /api/auth/register", () => {
     expect(stored?.passwordHash).toMatch(/^\$argon2id\$/);
   });
 
+  it("rejects an email that is already registered", async () => {
+    await request(app).post("/api/auth/register").send(validRegistration).expect(201);
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .send({ ...validRegistration, email: "RIYA@example.com", name: "Someone Else" });
+
+    expect(response.status).toBe(409);
+    expect(response.body.error.code).toBe("EMAIL_TAKEN");
+
+    const stored = await db.select().from(users);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]?.name).toBe(validRegistration.name);
+  });
+
   it("rejects a password shorter than eight characters", async () => {
     const response = await request(app)
       .post("/api/auth/register")
