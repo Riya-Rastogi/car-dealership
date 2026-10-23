@@ -16,3 +16,8 @@ const listHandler: RequestHandler = async (req, res) => {
 // is identical to the filtered list.
 vehicleRouter.get("/vehicles", requireAuth, listHandler);
 vehicleRouter.get("/vehicles/search", requireAuth, listHandler);
+
+vehicleRouter.get("/vehicles/:id", requireAuth, async (req, res) => {
+  const vehicle = await vehicleService.getById(req.params.id);
+  res.status(200).json({ vehicle });
+});

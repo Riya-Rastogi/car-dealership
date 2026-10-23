@@ -44,6 +44,11 @@ function buildWhere(query: VehicleListQuery): SQL | undefined {
 }
 
 export const vehicleRepository = {
+  async findById(id: string): Promise<VehicleRow | null> {
+    const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
+    return vehicle ?? null;
+  },
+
   async list(query: VehicleListQuery): Promise<{ rows: VehicleRow[]; total: number }> {
     const where = buildWhere(query);
     const offset = (query.page - 1) * query.limit;
