@@ -44,7 +44,8 @@ describe("POST /api/vehicles", () => {
   });
 
   it("defaults quantity to zero when it is omitted", async () => {
-    const { quantity: _quantity, ...withoutQuantity } = validVehicle;
+    const { quantity, ...withoutQuantity } = validVehicle;
+    expect(quantity).toBe(2);
 
     const response = await create(withoutQuantity);
 
