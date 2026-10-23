@@ -175,3 +175,34 @@ export interface VehicleListResponse {
   meta: VehicleListMeta;
 }
 
+export const restockSchema = z
+  .object({
+    quantity: z
+      .number()
+      .int("Quantity must be a whole number")
+      .positive("Quantity must be greater than zero")
+      .max(10_000, "Quantity cannot exceed 10000"),
+  })
+  .strict();
+
+export type RestockInput = z.infer<typeof restockSchema>;
+
+export interface Purchase {
+  id: string;
+  vehicleId: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
+  createdAt: string;
+  vehicle: Vehicle | null;
+}
+
+export interface PurchaseListResponse {
+  data: Purchase[];
+}
+
+export interface PurchaseResponse {
+  vehicle: Vehicle;
+  purchase: Purchase;
+}
+
