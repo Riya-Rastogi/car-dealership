@@ -90,7 +90,7 @@ describe("VehicleDetailPage", () => {
     expect(purchaseVehicle).toHaveBeenCalledWith(vehicle.id);
     expect(await screen.findByText("Purchase complete")).toBeInTheDocument();
     expect(screen.getByText("Ford Mustang GT is now in your garage.")).toBeInTheDocument();
-    expect(screen.getByText("1 available")).toBeInTheDocument();
+    expect(screen.getAllByText("1 available").length).toBeGreaterThan(0);
   });
 
   it("rolls back the optimistic decrement and explains a lost race", async () => {

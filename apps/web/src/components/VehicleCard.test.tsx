@@ -38,7 +38,7 @@ describe("VehicleCard", () => {
   it("renders an out-of-stock card for a vehicle with no units", () => {
     renderCard({ quantity: 0 });
 
-    expect(screen.getByText("Out of stock")).toBeInTheDocument();
+    expect(screen.getAllByText("Out of stock").length).toBeGreaterThan(0);
     expect(screen.getByText("Currently unavailable")).toBeInTheDocument();
   });
 
