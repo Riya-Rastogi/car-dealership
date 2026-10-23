@@ -1,4 +1,5 @@
 import express from "express";
+import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { healthRouter } from "./routes/health.js";
 
 /**
@@ -12,14 +13,8 @@ export function createApp() {
 
   app.use("/api", healthRouter);
 
-  app.use((_req, res) => {
-    res.status(404).json({
-      error: {
-        code: "NOT_FOUND",
-        message: "Route not found",
-      },
-    });
-  });
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }
