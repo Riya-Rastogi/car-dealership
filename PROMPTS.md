@@ -38,3 +38,19 @@ login, `/me`, admin guard). Every feature landed as a failing test commit follow
 implementation commit. Test database is `dealer_test`; truncation refuses any database whose name
 does not end in `_test`.
 
+**User:** run the code in my system
+
+**Assistant:** committed the red vehicle-list test, started the API on port 3000 and Vite on port
+5173, applied the missing development migration, and verified register, login and `/api/auth/me`
+over real HTTP.
+
+**User:** doirectly run in myststem
+
+**Assistant:** opened `http://localhost:5173` in the default browser and continued the vehicle
+list implementation while the servers stayed up.
+
+**User:** run code in mystem
+
+**Assistant:** confirmed both servers, seeded the demo accounts, and left the running app open at
+`http://localhost:5173`.
+
