@@ -84,4 +84,14 @@ export const authService = {
       token: issueToken(user),
     };
   },
+
+  async me(userId: string): Promise<PublicUser> {
+    const user = await userRepository.findById(userId);
+
+    if (!user) {
+      throw new AppError(401, "UNAUTHORIZED", "The account for this token no longer exists");
+    }
+
+    return toPublicUser(user);
+  },
 };
