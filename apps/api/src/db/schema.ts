@@ -53,3 +53,27 @@ export const vehicles = pgTable(
 );
 
 export type VehicleRow = typeof vehicles.$inferSelect;
+
+export const purchases = pgTable(
+  "purchases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    vehicleId: uuid("vehicle_id")
+      .notNull()
+      .references(() => vehicles.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull(),
+    unitPriceCents: integer("unit_price_cents").notNull(),
+    totalCents: integer("total_cents").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("purchases_user_idx").on(table.userId),
+    index("purchases_vehicle_idx").on(table.vehicleId),
+    check("purchases_quantity_positive", sql`${table.quantity} > 0`),
+  ],
+);
+
+export type PurchaseRow = typeof purchases.$inferSelect;

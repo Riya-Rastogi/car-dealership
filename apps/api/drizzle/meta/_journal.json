@@ -15,6 +15,13 @@
       "when": 1792777259384,
       "tag": "0001_add_vehicles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792779410657,
+      "tag": "0002_flashy_lethal_legion",
+      "breakpoints": true
     }
   ]
 }
