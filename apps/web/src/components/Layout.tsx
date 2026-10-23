@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider.js";
 
 function initials(name: string): string {
@@ -8,6 +8,12 @@ function initials(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
+}
+
+function navClass({ isActive }: { isActive: boolean }): string {
+  return `rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
+    isActive ? "bg-panel-raised text-accent" : "text-muted hover:text-ink"
+  }`;
 }
 
 export function Layout() {
@@ -21,7 +27,7 @@ export function Layout() {
             <span className="grid size-9 place-items-center rounded-md bg-accent font-display text-lg font-bold text-accent-ink transition-transform group-hover:-rotate-6">
               A
             </span>
-            <span className="flex flex-col leading-none">
+            <span className="hidden flex-col leading-none sm:flex">
               <span className="font-display text-sm font-bold tracking-[0.32em] text-ink">
                 AUTOLINE
               </span>
@@ -31,8 +37,17 @@ export function Layout() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-muted sm:inline-flex">
+          <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Primary">
+            <NavLink to="/" end className={navClass}>
+              Inventory
+            </NavLink>
+            <NavLink to="/garage" className={navClass}>
+              Garage
+            </NavLink>
+          </nav>
+
+          <div className="ml-auto flex items-center gap-2 sm:gap-4">
+            <span className="hidden items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-muted xl:inline-flex">
               <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
               Live stock
             </span>
@@ -40,7 +55,7 @@ export function Layout() {
             {user ? (
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 place-items-center rounded-full border border-line bg-panel-raised font-display text-xs font-semibold text-accent">
+                  <span className="hidden size-8 place-items-center rounded-full border border-line bg-panel-raised font-display text-xs font-semibold text-accent sm:grid">
                     {initials(user.name)}
                   </span>
                   <span className="hidden flex-col leading-tight md:flex">

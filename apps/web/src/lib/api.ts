@@ -3,7 +3,10 @@ import type {
   AuthResponse,
   LoginInput,
   PublicUser,
+  PurchaseListResponse,
+  PurchaseResponse,
   RegisterInput,
+  Vehicle,
   VehicleCategory,
   VehicleListResponse,
   VehicleSort,
@@ -141,5 +144,21 @@ export const api = {
 
   listVehicles(params: VehicleListParams = {}): Promise<VehicleListResponse> {
     return request<VehicleListResponse>(`/vehicles${toQueryString(params)}`);
+  },
+
+  async getVehicle(id: string): Promise<Vehicle> {
+    const response = await request<{ vehicle: Vehicle }>(`/vehicles/${id}`);
+    return response.vehicle;
+  },
+
+  purchaseVehicle(id: string): Promise<PurchaseResponse> {
+    return request<PurchaseResponse>(`/vehicles/${id}/purchase`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+  },
+
+  listPurchases(): Promise<PurchaseListResponse> {
+    return request<PurchaseListResponse>("/purchases");
   },
 };

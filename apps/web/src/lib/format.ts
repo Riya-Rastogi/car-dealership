@@ -28,3 +28,13 @@ export function stockLabel(quantity: number): string {
 
   return `${quantity} available`;
 }
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+export function formatDate(iso: string): string {
+  return dateFormatter.format(new Date(iso));
+}
