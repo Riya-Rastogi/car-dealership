@@ -16,6 +16,7 @@
     "dev:web": "npm run dev --workspace @dealer/web",
     "build": "npm run build --workspace @dealer/shared && npm run build --workspace @dealer/api && npm run build --workspace @dealer/web",
     "db:create": "node apps/api/scripts/create-databases.mjs",
+    "db:migrate": "npm run db:migrate --workspace @dealer/api",
     "test": "npm run build --workspace @dealer/shared && npm run test --workspaces --if-present",
     "test:coverage": "npm run build --workspace @dealer/shared && npm run test:coverage --workspaces --if-present",
     "typecheck": "npm run build --workspace @dealer/shared && npm run typecheck --workspaces --if-present",

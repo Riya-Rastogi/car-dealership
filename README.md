@@ -43,6 +43,7 @@ npm install
 cp .env.example .env
 docker compose up -d db
 npm run db:create      # creates dealer and dealer_test
+npm run db:migrate     # applies committed migrations to dealer
 npm run dev:api        # http://localhost:3000/api/health
 npm run dev:web        # http://localhost:5173
 ```
@@ -57,6 +58,7 @@ Without Docker, create a `dealer` database on any local PostgreSQL 16 and point 
 | `npm run dev:api`       | API with watch mode                                     |
 | `npm run dev:web`       | Vite dev server, proxies `/api` to port 3000            |
 | `npm run db:create`     | Creates the `dealer` and `dealer_test` databases        |
+| `npm run db:migrate`    | Applies committed migrations to `DATABASE_URL`          |
 | `npm test`              | Build shared types, then run every workspace test suite |
 | `npm run test:coverage` | Same, with coverage reports                             |
 | `npm run typecheck`     | `tsc --noEmit` in every workspace                       |
