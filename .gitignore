@@ -11,6 +11,7 @@ npm-debug.log*
 Thumbs.db
 playwright-report/
 test-results/
+.tmp-*
 .pgdata/
 .pgbin/
 .pgbin.zip
