@@ -154,3 +154,23 @@ continue
 ```
 
 **Assistant:** audited the remaining Phase 8 items and found two deployment blockers: the API had no CORS middleware and the SPA hardcoded `/api`. Added failing tests first, then a comma-separated CORS allowlist and `VITE_API_URL` support for split deployments. Added the Render blueprint, Vercel config, MIT licence, environment table, architecture diagram, curl examples, design decisions and deployment steps, and regenerated coverage for the new tests (68 API + 21 web).
+
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (README rewrite)
+
+**User:**
+
+```
+rewrite the readme file in human readable form and steps to run the code in other aur every system who want to run it and add a system desingn archtectureimage  to make it more undertanadble for the person who dont know whats goint on and keep all the import parts that already in and write my ai usage according to it
+```
+
+**Assistant:** rewrote the README as a task-oriented guide with prerequisites, Docker and native-PostgreSQL paths for Windows, macOS and Linux, an environment-variable table, troubleshooting, a plain-English architecture image, the retained technical sections, and a matching AI usage section.
+
+**User:**
+
+```
+can you write other commnad rathaer than what i give you i wnat ai uses more technical i used ai to connect this and that this is the problem i am facing then i give this commnat backend is not not connected with frontwnd then i use this commnat rewrite yourself in this structure
+
+in ai uses in readme
+```
+
+**Assistant:** restructured My AI Usage as six technical entries, each following problem → instruction → fix → verification: the frontend/backend connection, atomic purchase, local Windows run, URL-synced filters, split deployment, and the README rewrite.

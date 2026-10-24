@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">How Autoline works</title>
+  <desc id="desc">A plain-English system diagram. Your browser shows the website and sends requests over HTTPS to the server. The server checks your login and applies the stock and price rules, then reads and writes data in the PostgreSQL database. The lower panel explains the atomic purchase flow that prevents overselling.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c9f75e" />
+    </marker>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c9f75e" stop-opacity="0.14" />
+      <stop offset="1" stop-color="#c9f75e" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1400" height="900" fill="#080a07" />
+  <circle cx="1240" cy="80" r="340" fill="url(#glow)" />
+  <circle cx="120" cy="840" r="260" fill="url(#glow)" opacity="0.5" />
+
+  <!-- Header -->
+  <g font-family="Segoe UI, Inter, Arial, sans-serif">
+    <text x="70" y="62" fill="#c9f75e" font-size="13" font-weight="700" letter-spacing="3.4">AUTOLINE · SYSTEM MAP</text>
+    <text x="70" y="126" fill="#f6f8f1" font-size="48" font-weight="700" letter-spacing="-1.2">How Autoline works</text>
+    <text x="70" y="164" fill="#a3ad9b" font-size="19">A plain-English map of the website, the server, and the database that remembers everything.</text>
+
+    <!-- Three panels -->
+    <g>
+      <rect x="70" y="200" width="350" height="270" rx="18" fill="#11150e" stroke="#2c3427" />
+      <text x="100" y="238" fill="#c9f75e" font-size="12" font-weight="700" letter-spacing="2.2">01 · THE SCREEN</text>
+
+      <g stroke="#c9f75e" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="100" y="260" width="46" height="34" rx="6" />
+        <path d="M100 271 H146" />
+        <circle cx="108" cy="266" r="1.6" fill="#c9f75e" stroke="none" />
+        <circle cx="114" cy="266" r="1.6" fill="#c9f75e" stroke="none" />
+        <path d="M107 281 H128" />
+        <path d="M107 287 H121" opacity="0.55" />
+      </g>
+
+      <text x="100" y="334" fill="#f6f8f1" font-size="29" font-weight="700">Your browser</text>
+      <text x="100" y="368" fill="#b9c2b0" font-size="16.5">The website you click on.</text>
+      <text x="100" y="394" fill="#b9c2b0" font-size="16.5">It shows the catalogue, filters,</text>
+      <text x="100" y="420" fill="#b9c2b0" font-size="16.5">forms and your garage.</text>
+
+      <rect x="100" y="440" width="126" height="26" rx="13" fill="#1b2315" stroke="#37432c" />
+      <text x="116" y="458" fill="#c9f75e" font-size="12" font-weight="600" letter-spacing="0.6">React + Vite</text>
+    </g>
+
+    <g>
+      <rect x="510" y="200" width="350" height="270" rx="18" fill="#11150e" stroke="#2c3427" />
+      <text x="540" y="238" fill="#c9f75e" font-size="12" font-weight="700" letter-spacing="2.2">02 · THE RULES</text>
+
+      <g stroke="#c9f75e" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="540" y="260" width="48" height="12" rx="3" />
+        <rect x="540" y="279" width="48" height="12" rx="3" />
+        <rect x="540" y="298" width="48" height="12" rx="3" />
+        <circle cx="580" cy="266" r="1.8" fill="#c9f75e" stroke="none" />
+        <circle cx="580" cy="285" r="1.8" fill="#c9f75e" stroke="none" />
+        <circle cx="580" cy="304" r="1.8" fill="#c9f75e" stroke="none" />
+      </g>
+
+      <text x="540" y="334" fill="#f6f8f1" font-size="29" font-weight="700">The server</text>
+      <text x="540" y="368" fill="#b9c2b0" font-size="16.5">Checks your login, applies the</text>
+      <text x="540" y="394" fill="#b9c2b0" font-size="16.5">rules for stock and prices, and</text>
+      <text x="540" y="420" fill="#b9c2b0" font-size="16.5">blocks actions you cannot do.</text>
+
+      <rect x="540" y="440" width="118" height="26" rx="13" fill="#1b2315" stroke="#37432c" />
+      <text x="556" y="458" fill="#c9f75e" font-size="12" font-weight="600" letter-spacing="0.6">Express API</text>
+    </g>
+
+    <g>
+      <rect x="950" y="200" width="350" height="270" rx="18" fill="#11150e" stroke="#2c3427" />
+      <text x="980" y="238" fill="#c9f75e" font-size="12" font-weight="700" letter-spacing="2.2">03 · THE MEMORY</text>
+
+      <g stroke="#c9f75e" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="1006" cy="268" rx="24" ry="9" />
+        <path d="M982 268 V306 A24 9 0 0 0 1030 306 V268" />
+        <path d="M982 287 A24 9 0 0 0 1030 287" opacity="0.7" />
+      </g>
+
+      <text x="980" y="334" fill="#f6f8f1" font-size="29" font-weight="700">The database</text>
+      <text x="980" y="368" fill="#b9c2b0" font-size="16.5">Keeps every car, account and</text>
+      <text x="980" y="394" fill="#b9c2b0" font-size="16.5">purchase, even after the server</text>
+      <text x="980" y="420" fill="#b9c2b0" font-size="16.5">restarts.</text>
+
+      <rect x="980" y="440" width="132" height="26" rx="13" fill="#1b2315" stroke="#37432c" />
+      <text x="996" y="458" fill="#c9f75e" font-size="12" font-weight="600" letter-spacing="0.6">PostgreSQL 16</text>
+    </g>
+
+    <!-- Arrows between panels -->
+    <g stroke="#c9f75e" stroke-width="2" marker-end="url(#arrow)">
+      <line x1="430" y1="335" x2="496" y2="335" />
+      <line x1="870" y1="335" x2="936" y2="335" />
+    </g>
+    <g font-family="Segoe UI, Inter, Arial, sans-serif" text-anchor="middle">
+      <text x="463" y="318" fill="#c9f75e" font-size="10" font-weight="700" letter-spacing="1.4">ASKS</text>
+      <text x="463" y="359" fill="#8f9a87" font-size="10.5">HTTPS + JSON</text>
+      <text x="903" y="318" fill="#c9f75e" font-size="10" font-weight="700" letter-spacing="1.4">DATA</text>
+      <text x="903" y="359" fill="#8f9a87" font-size="10.5">SQL</text>
+    </g>
+
+    <text x="700" y="500" fill="#8f9a87" font-size="14" text-anchor="middle">Your account is the key: everyone can browse, buy and list a car. Only admins can restock or delete one.</text>
+
+    <!-- Purchase flow -->
+    <rect x="70" y="535" width="1230" height="315" rx="20" fill="#11150e" stroke="#2c3427" />
+    <text x="100" y="581" fill="#c9f75e" font-size="12" font-weight="700" letter-spacing="2.2">THE PART THAT PROTECTS THE DEALERSHIP</text>
+    <text x="100" y="618" fill="#f6f8f1" font-size="27" font-weight="700">What happens when you press “Buy”</text>
+
+    <line x1="140" y1="678" x2="1040" y2="678" stroke="#33402a" stroke-width="2" />
+    <line x1="140" y1="678" x2="1040" y2="678" stroke="#c9f75e" stroke-width="2" opacity="0.55" />
+
+    <g font-family="Segoe UI, Inter, Arial, sans-serif">
+      <!-- Step 1 -->
+      <circle cx="140" cy="678" r="19" fill="#c9f75e" />
+      <text x="140" y="684" fill="#0b0d09" font-size="14" font-weight="700" text-anchor="middle">1</text>
+      <text x="140" y="728" fill="#f6f8f1" font-size="16.5" font-weight="600">You confirm</text>
+      <text x="140" y="756" fill="#9aa394" font-size="14">The website sends one</text>
+      <text x="140" y="777" fill="#9aa394" font-size="14">request to the server.</text>
+
+      <!-- Step 2 -->
+      <circle cx="440" cy="678" r="19" fill="#c9f75e" />
+      <text x="440" y="684" fill="#0b0d09" font-size="14" font-weight="700" text-anchor="middle">2</text>
+      <text x="440" y="728" fill="#f6f8f1" font-size="16.5" font-weight="600">Stock is checked</text>
+      <text x="440" y="756" fill="#9aa394" font-size="14">One car comes off the shelf</text>
+      <text x="440" y="777" fill="#9aa394" font-size="14">in a single, unbreakable step.</text>
+
+      <!-- Step 3 -->
+      <circle cx="740" cy="678" r="19" fill="#c9f75e" />
+      <text x="740" y="684" fill="#0b0d09" font-size="14" font-weight="700" text-anchor="middle">3</text>
+      <text x="740" y="728" fill="#f6f8f1" font-size="16.5" font-weight="600">The receipt is saved</text>
+      <text x="740" y="756" fill="#9aa394" font-size="14">The stock change and your</text>
+      <text x="740" y="777" fill="#9aa394" font-size="14">purchase happen together.</text>
+
+      <!-- Step 4 -->
+      <circle cx="1040" cy="678" r="19" fill="#c9f75e" />
+      <text x="1040" y="684" fill="#0b0d09" font-size="14" font-weight="700" text-anchor="middle">4</text>
+      <text x="1040" y="728" fill="#f6f8f1" font-size="16.5" font-weight="600">Everyone sees the truth</text>
+      <text x="1040" y="756" fill="#9aa394" font-size="14">The new count appears and</text>
+      <text x="1040" y="777" fill="#9aa394" font-size="14">the car joins your garage.</text>
+    </g>
+
+    <rect x="100" y="792" width="1170" height="2" fill="#242c1e" />
+    <text x="100" y="819" fill="#c9f75e" font-size="14.5" font-weight="600">If two people reach for the last car at once, only one succeeds.</text>
+    <text x="100" y="840" fill="#8f9a87" font-size="14.5">The other sees “Out of stock” — stock can never go below zero.</text>
+  </g>
+</svg>
