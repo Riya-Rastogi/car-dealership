@@ -11,6 +11,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   return (
     <Link
       to={`/vehicles/${vehicle.id}`}
+      aria-label={`View ${title}`}
       className="group block h-full rounded-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
     >
       <article className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-panel transition duration-300 group-hover:-translate-y-1 group-hover:border-accent/40 group-hover:shadow-[0_24px_60px_-32px_rgba(200,247,81,0.35)]">

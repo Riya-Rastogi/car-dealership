@@ -75,6 +75,7 @@ function PurchaseRow({ purchase }: { purchase: Purchase }) {
       {vehicle ? (
         <Link
           to={`/vehicles/${vehicle.id}`}
+          aria-label={`View ${title}`}
           className="group flex items-center gap-4 rounded-card border border-line bg-panel p-4 transition hover:border-accent/40 hover:bg-panel/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         >
           {body}
