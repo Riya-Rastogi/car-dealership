@@ -71,6 +71,7 @@ test("customer buys a car and sees it in the garage", async ({ page, request }) 
     await expect(page.getByRole("heading", { name: /Find your/ })).toBeVisible();
 
     await page.getByLabel("Search by make or model").fill(vehicle.model);
+    await expect(page.getByText("1 vehicle matching")).toBeVisible();
     const card = page.getByRole("link", { name: new RegExp(fullName) });
     await expect(card).toBeVisible();
     await card.click();
