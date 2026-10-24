@@ -54,3 +54,19 @@ list implementation while the servers stayed up.
 **Assistant:** confirmed both servers, seeded the demo accounts, and left the running app open at
 `http://localhost:5173`.
 
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free
+
+**User:**
+
+```
+continue with the next steps
+```
+
+**Assistant:** completed the vehicle detail, confirmation-dialog purchase flow and customer
+garage, then wired their routes and verified them in Chrome against the running API. Replaced the
+reused stock photos with model-accurate local Wikimedia Commons images and committed the
+attribution file. Finished the admin inventory console and Playwright journeys (purchase → garage,
+admin create/restock/edit/delete, out-of-stock purchase guard), fixed the vehicle links'
+accessible names, and updated the README with the local PostgreSQL and test commands.
+
+
