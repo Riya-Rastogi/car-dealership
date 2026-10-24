@@ -11,7 +11,7 @@ function initials(name: string): string {
 }
 
 function navClass({ isActive }: { isActive: boolean }): string {
-  return `rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
+  return `whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
     isActive ? "bg-panel-raised text-accent" : "text-muted hover:text-ink"
   }`;
 }
@@ -22,7 +22,7 @@ export function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <Link to="/" className="group flex items-center gap-3" aria-label="Autoline inventory">
             <span className="grid size-9 place-items-center rounded-md bg-accent font-display text-lg font-bold text-accent-ink transition-transform group-hover:-rotate-6">
               A
@@ -37,7 +37,7 @@ export function Layout() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Primary">
+          <nav className="flex shrink-0 items-center gap-0.5 sm:gap-1" aria-label="Primary">
             <NavLink to="/" end className={navClass}>
               Inventory
             </NavLink>
@@ -74,9 +74,24 @@ export function Layout() {
                 <button
                   type="button"
                   onClick={logout}
-                  className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-muted transition hover:border-accent/60 hover:text-ink"
+                  aria-label="Sign out"
+                  className="grid size-9 shrink-0 place-items-center rounded-md border border-line text-muted transition hover:border-accent/60 hover:text-ink sm:inline-flex sm:size-auto sm:px-3 sm:py-1.5 sm:text-xs sm:font-medium"
                 >
-                  Sign out
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="size-4 sm:hidden"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3M10 8l4 4-4 4M14 12H3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="hidden sm:inline">Sign out</span>
                 </button>
               </div>
             ) : null}
