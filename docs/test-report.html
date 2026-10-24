@@ -1,0 +1,293 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autoline test report</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --canvas: #0a0b0d;
+        --panel: #101216;
+        --raised: #15181d;
+        --line: #23262c;
+        --ink: #f5f5ef;
+        --muted: #9ca09a;
+        --accent: #c8f751;
+        --accent-ink: #0d1104;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 82% -8%, rgb(200 247 81 / 9%), transparent 34rem),
+          var(--canvas);
+        color: var(--ink);
+        font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+        line-height: 1.6;
+      }
+
+      main {
+        width: min(960px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4rem 0 5rem;
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0.5rem 0 0;
+        font-size: clamp(2.25rem, 5vw, 3.5rem);
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+
+      .lede {
+        max-width: 44rem;
+        margin: 1rem 0 0;
+        color: var(--muted);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        gap: 1rem;
+        margin: 2.5rem 0;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 0.75rem;
+        background: var(--panel);
+        padding: 1.25rem;
+      }
+
+      .card strong {
+        display: block;
+        color: var(--accent);
+        font-size: 2rem;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+      }
+
+      .card span {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      section {
+        margin-top: 2.5rem;
+      }
+
+      h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1.3rem;
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        margin: 0.5rem 0;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 0.75rem;
+        background: var(--panel);
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+      }
+
+      th {
+        background: var(--raised);
+        color: var(--muted);
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td.num {
+        font-variant-numeric: tabular-nums;
+      }
+
+      code {
+        border: 1px solid var(--line);
+        border-radius: 0.35rem;
+        background: var(--raised);
+        padding: 0.1rem 0.35rem;
+        color: var(--ink);
+        font-size: 0.85em;
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .badge {
+        display: inline-block;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        padding: 0.1rem 0.55rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      footer {
+        margin-top: 3.5rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1rem;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding-top: 2.5rem;
+        }
+
+        th,
+        td {
+          padding: 0.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Autoline Â· Test evidence</p>
+      <h1>Test report</h1>
+      <p class="lede">
+        Automated verification for the car dealership inventory system. Generated on 24 October
+        2026 from the running API, the component suite and the Playwright journeys.
+        <span class="badge">All green</span>
+      </p>
+
+      <div class="cards">
+        <div class="card"><strong>84</strong><span>API + component tests passing</span></div>
+        <div class="card"><strong>3</strong><span>Playwright journeys passing</span></div>
+        <div class="card"><strong>80.7%</strong><span>API statement coverage</span></div>
+        <div class="card"><strong>46.9%</strong><span>Web statement coverage</span></div>
+      </div>
+
+      <section>
+        <h2>API integration suite</h2>
+        <p class="note">
+          Vitest + Supertest against PostgreSQL <code>dealer_test</code>. Every file truncates the
+          database, so runs are isolated and require a database whose name ends in
+          <code>_test</code>.
+        </p>
+        <table>
+          <tbody>
+            <tr><th>Test files</th><td class="num">13</td></tr>
+            <tr><th>Tests</th><td class="num">65 passing</td></tr>
+            <tr><th>Statements</th><td class="num">80.69% (631 / 782)</td></tr>
+            <tr><th>Branches</th><td class="num">90.00% (126 / 140)</td></tr>
+            <tr><th>Functions</th><td class="num">86.95% (40 / 46)</td></tr>
+            <tr><th>Lines</th><td class="num">80.69% (631 / 782)</td></tr>
+            <tr>
+              <th>HTML report</th>
+              <td><a href="test-coverage/api/index.html">test-coverage/api/index.html</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Web component suite</h2>
+        <p class="note">
+          Vitest + Testing Library in jsdom. Covers the auth guards, the listing card, login,
+          vehicle purchase states and the admin console.
+        </p>
+        <table>
+          <tbody>
+            <tr><th>Test files</th><td class="num">5</td></tr>
+            <tr><th>Tests</th><td class="num">19 passing</td></tr>
+            <tr><th>Statements</th><td class="num">46.89% (1315 / 2804)</td></tr>
+            <tr><th>Branches</th><td class="num">64.17% (163 / 254)</td></tr>
+            <tr><th>Functions</th><td class="num">46.46% (46 / 99)</td></tr>
+            <tr><th>Lines</th><td class="num">46.89% (1315 / 2804)</td></tr>
+            <tr>
+              <th>HTML report</th>
+              <td><a href="test-coverage/web/index.html">test-coverage/web/index.html</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>End-to-end journeys</h2>
+        <p class="note">
+          Playwright against the real API and SPA in the installed Chrome channel. The suite starts
+          any missing dev server and uses the seeded demo accounts.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Journey</th><th>What it proves</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Customer purchase</td>
+              <td>Register â†’ search â†’ buy â†’ the car appears once in the garage.</td>
+            </tr>
+            <tr>
+              <td>Admin inventory</td>
+              <td>Create â†’ restock â†’ edit â†’ delete, with the table reflecting each change.</td>
+            </tr>
+            <tr>
+              <td>Sold-out guard</td>
+              <td>An out-of-stock vehicle disables the purchase action.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Reproduce</h2>
+        <p>
+          <code>npm run test:coverage</code> runs both unit suites with coverage.
+          <code>npm run test:e2e</code> runs the browser journeys. CI runs the same checks against a
+          PostgreSQL 16 service and uploads the coverage directories as an artifact.
+        </p>
+      </section>
+
+      <footer>
+        Autoline inventory system Â· Node 22 Â· Express 5 Â· PostgreSQL 16 Â· React 19 Â· Vitest Â·
+        Playwright
+      </footer>
+    </main>
+  </body>
+</html>

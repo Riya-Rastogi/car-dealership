@@ -82,6 +82,24 @@ Open `http://localhost:5173` and sign in with one of the demo accounts below.
 - **Manage inventory** as an admin: create and edit listings, restock units, and delete vehicles.
   Stock changes only through purchase and restock, never through a raw vehicle update.
 
+## Screenshots
+
+Captured from the running app at 1440×1000 by `npm run screenshots`; the mobile view is 375×812.
+
+| Sign in | Catalogue |
+| --- | --- |
+| ![Sign-in screen](docs/screenshots/01-login.png) | ![Vehicle catalogue](docs/screenshots/02-dashboard.png) |
+| **Vehicle detail** | **Sold-out state** |
+| ![Vehicle detail](docs/screenshots/03-vehicle-detail.png) | ![Out-of-stock vehicle](docs/screenshots/04-out-of-stock.png) |
+| **Purchase confirmation** | **Customer garage** |
+| ![Purchase toast](docs/screenshots/05-purchase-toast.png) | ![Customer garage](docs/screenshots/06-garage.png) |
+| **Admin console** | **Admin edit dialog** |
+| ![Admin console](docs/screenshots/07-admin.png) | ![Admin edit dialog](docs/screenshots/08-admin-form.png) |
+
+**Mobile catalogue**
+
+<img src="docs/screenshots/09-mobile.png" alt="Mobile catalogue at 375 by 812" width="375">
+
 ## Scripts
 
 | Command                 | What it does                                             |
@@ -94,6 +112,7 @@ Open `http://localhost:5173` and sign in with one of the demo accounts below.
 | `npm test`              | Builds shared types, then runs every workspace test suite|
 | `npm run test:e2e`      | Playwright journeys; starts any missing dev server       |
 | `npm run test:coverage` | Same as `npm test`, with coverage reports                |
+| `npm run screenshots`   | Regenerates the README images against the running app    |
 | `npm run typecheck`     | `tsc --noEmit` in every workspace                        |
 | `npm run lint`          | ESLint over the repo                                     |
 | `npm run build`         | Builds shared, API, then web                             |
@@ -101,6 +120,20 @@ Open `http://localhost:5173` and sign in with one of the demo accounts below.
 The E2E suite is configured in `apps/web/playwright.config.ts` and uses the installed Chrome
 channel. It covers registration → search → purchase → garage, the full admin create/restock/
 edit/delete flow, and the disabled purchase action for an out-of-stock vehicle.
+
+## Testing
+
+| Suite | Tool                        | Tests      | Coverage                              |
+| ----- | --------------------------- | ---------- | ------------------------------------- |
+| API   | Vitest + Supertest          | 65         | 80.69% statements · 90.00% branches   |
+| Web   | Vitest + Testing Library    | 19         | 46.89% statements · 64.17% branches   |
+| E2E   | Playwright + installed Chrome | 3 journeys | —                                     |
+
+The API suite runs against PostgreSQL and exercises the HTTP surface end to end; the web suite
+covers auth guards, the listing card, login, purchase states and the admin console. The
+[test report](docs/test-report.html) collects the counts and links to the generated HTML coverage
+for [the API](docs/test-coverage/api/index.html) and [the web app](docs/test-coverage/web/index.html).
+GitHub Actions runs typecheck, lint, coverage and build on every push.
 
 ## API
 
