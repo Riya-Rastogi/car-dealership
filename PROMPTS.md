@@ -89,4 +89,13 @@ not image can you write the ai usage section by yuself
 first-person account of the tool, the test-first workflow, the atomic purchase decision and the
 reflection.
 
+**User:**
+
+```
+or ai how i use and which command i give keep fewer ai command
+```
+
+**Assistant:** shortened the section again, replacing the long bullet list with the five short
+prompts that drove the build and a brief note on the decisions kept human.
+
 
