@@ -12,9 +12,8 @@ services:
     plan: free
     region: oregon
     buildCommand: npm ci --include=dev && npm run build --workspace @dealer/shared && npm run build --workspace @dealer/api
-    preDeployCommand: npm run db:migrate --workspace @dealer/api
-    initialDeployHook: npm run db:seed --workspace @dealer/api
-    startCommand: npm run start --workspace @dealer/api
+    # Free services cannot run pre-deploy commands, so migrations run once per boot.
+    startCommand: npm run db:migrate --workspace @dealer/api && npm run start --workspace @dealer/api
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION

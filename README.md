@@ -8,13 +8,13 @@ the rules, and PostgreSQL stores the cars, accounts and purchases.
 The project was built test-first. Each feature started with a failing test, then the smallest
 implementation that made it pass.
 
-> **Status:** the app runs locally against PostgreSQL. 68 API tests, 21 web tests and 3 Playwright
-> journeys pass. Deployment files for Render and Vercel are included; see
-> [Deployment](#deployment).
+> **Status:** live at **[car-dealership-nu-six.vercel.app](https://car-dealership-nu-six.vercel.app)**,
+> with the API and PostgreSQL on Render. 68 API tests, 21 web tests and 3 Playwright journeys pass.
 
 ## Contents
 
 - [What you can do](#what-you-can-do)
+- [Live demo](#live-demo)
 - [Demo accounts](#demo-accounts)
 - [Screenshots](#screenshots)
 - [How it works](#how-it-works)
@@ -52,6 +52,16 @@ The seed creates one customer and one admin account:
 | -------- | -------------------- | ----------- |
 | Customer | `demo@autoline.dev`  | `demo1234`  |
 | Admin    | `admin@autoline.dev` | `admin1234` |
+
+## Live demo
+
+| What       | URL                                          |
+| ---------- | -------------------------------------------- |
+| Storefront | https://car-dealership-nu-six.vercel.app     |
+| API health | https://autoline-api.onrender.com/api/health |
+
+Use either account from [Demo accounts](#demo-accounts). The API and database are on Render's free
+plan, so the first request after a quiet period can take up to a minute while the service wakes.
 
 ## Screenshots
 
@@ -495,30 +505,70 @@ GitHub Actions runs typecheck, lint, coverage and build on every push.
 
 ## Deployment
 
-The repository includes a [Render blueprint](./render.yaml) for the API and PostgreSQL, and a
-[Vercel configuration](./vercel.json) for the SPA. The split keeps the database private and lets the
-website be served from a CDN.
+The live app uses [Render](https://render.com) for the API and PostgreSQL and
+[Vercel](https://vercel.com) for the React SPA. The split keeps the database private and serves the
+website from a CDN. The repository contains the [Render blueprint](./render.yaml) and the
+[Vercel configuration](./vercel.json).
+
+The production wiring is:
+
+| Setting        | Where  | Value                                      |
+| -------------- | ------ | ------------------------------------------ |
+| `CORS_ORIGIN`  | Render | `https://car-dealership-nu-six.vercel.app` |
+| `VITE_API_URL` | Vercel | `https://autoline-api.onrender.com/api`    |
+
+`CORS_ORIGIN` accepts a comma-separated list, so preview deployments can be added without allowing
+every origin.
 
 ### API and database (Render)
 
 1. Push the repository to GitHub.
 2. In Render, choose **New → Blueprint** and select the repo. The blueprint creates a free
    PostgreSQL 16 database and the `autoline-api` web service.
-3. When Render asks for `CORS_ORIGIN`, enter the Vercel URL from the next section. The value is a
-   comma-separated allowlist, so preview URLs can be added later.
-4. The first deploy applies the migrations and seeds the 24 cars plus the demo accounts. Check
-   `https://<service>.onrender.com/api/health` before opening the SPA.
+3. When Render asks for `CORS_ORIGIN`, enter the Vercel URL from the next section.
+4. Deploy. The start command runs `db:migrate` before the API boots. Render's free plan cannot run
+   `preDeployCommand` or `initialDeployHook`, so the migrations are part of the start command
+   instead; they are idempotent and safe on every restart.
+5. Seed the catalogue once. Free services have no shell, so run the seed from your machine against
+   the database's **External Database URL**:
+   - In Render, open the database and add your current IP under **Networking → IP Allow List**.
+   - Copy the external connection string.
+   - Run the seed from the project root:
+
+     ```bash
+     # macOS / Linux
+     DATABASE_URL='postgres://...' npm run db:seed
+     ```
+
+     ```powershell
+     # Windows PowerShell
+     $env:DATABASE_URL = 'postgres://...'
+     npm run db:seed
+     Remove-Item Env:DATABASE_URL
+     ```
+
+     If PostgreSQL rejects the connection with an SSL error, append `?sslmode=no-verify` to the
+     URL (the database is still encrypted; this only skips certificate verification for the
+     external host).
+
+   The seed is idempotent, so it can be run again without duplicating cars or accounts. Remove the
+   temporary IP entry when you are done.
+
+6. Check `https://<service>.onrender.com/api/health` before opening the SPA.
 
 ### SPA (Vercel)
 
 1. Import the same repository. Keep the root directory at the repo root; `vercel.json` builds the
    shared package and `apps/web`, then publishes `apps/web/dist`.
-2. Add `VITE_API_URL=https://<service>.onrender.com/api` to the Vercel project environment.
+2. Add `VITE_API_URL=https://<service>.onrender.com/api` to the Vercel project environment for
+   Production and Preview.
 3. Deploy, then copy the Vercel domain into Render's `CORS_ORIGIN` and redeploy the API.
 4. Smoke test: sign in as the demo customer, filter the catalogue, buy a car and open the garage.
 
-Free Render services sleep after inactivity, so the first request after a quiet period can take a
-few seconds. The API reads `PORT` from Render and binds to all interfaces automatically.
+Free Render services sleep after inactivity, so the first request after a quiet period can take
+about a minute. Free PostgreSQL databases also expire after 30 days; extend or upgrade the database
+before then if the demo should stay online. The API reads `PORT` from Render and binds to all
+interfaces automatically.
 
 ## Credits, AI use and license
 

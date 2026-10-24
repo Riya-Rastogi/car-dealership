@@ -174,3 +174,13 @@ in ai uses in readme
 ```
 
 **Assistant:** restructured My AI Usage as six technical entries, each following problem → instruction → fix → verification: the frontend/backend connection, atomic purchase, local Windows run, URL-synced filters, split deployment, and the README rewrite.
+
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (live deployment)
+
+**User:**
+
+```
+continue
+```
+
+**Assistant:** pushed the repo, confirmed CI green, deployed the SPA to Vercel and the API plus PostgreSQL 16 to Render. Fixed the Render login 500 by switching `DATABASE_URL` to the internal host with `sslmode=no-verify`, set `VITE_API_URL` and disabled Vercel Authentication, then ran a live Playwright smoke test: sign in, URL-synced search, purchase, garage and the disabled Out of stock button. Updated the README with the live URLs and the free-plan migration/seed path, and moved migrations into the start command because free services cannot run pre-deploy commands.
