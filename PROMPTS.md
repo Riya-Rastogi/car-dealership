@@ -69,4 +69,24 @@ attribution file. Finished the admin inventory console and Playwright journeys (
 admin create/restock/edit/delete, out-of-stock purchase guard), fixed the vehicle links'
 accessible names, and updated the README with the local PostgreSQL and test commands.
 
+**User:**
+
+```
+can you write ai usage section by urself mentionion some imprtange image as a human we give to model
+```
+
+**Assistant:** wrote the "My AI Usage" section in the first person, covering the tool used, the
+test-first workflow, the atomic-purchase decision, and the role of visual evidence — screenshots and
+model-accurate car photography — as human input to the model.
+
+**User:**
+
+```
+not image can you write the ai usage section by yuself
+```
+
+**Assistant:** rewrote the "My AI Usage" section without the image discussion, keeping the
+first-person account of the tool, the test-first workflow, the atomic purchase decision and the
+reflection.
+
 

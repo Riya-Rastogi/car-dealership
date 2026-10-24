@@ -137,6 +137,44 @@ install it after cloning.
 
 ## My AI Usage
 
-<!-- The author writes this section in Phase 8. Do not have an AI draft it. -->
+### Tools used
 
-_To be completed before submission._
+I used **OpenCode** with **DeepSeek V4.1 Flash Free** as the coding agent for this project. I set
+the scope, stack and acceptance criteria; the model did most of the implementation and test
+scaffolding, and I reviewed every commit.
+
+### How I used it
+
+- **Scaffolding and plumbing.** I chose npm workspaces instead of Bun and a local PostgreSQL 16
+  instead of Docker because of the machine I was working on. I had the model set up the
+  Express/Drizzle API, shared Zod schemas, and the Vite/React/Tailwind client, then trimmed the
+  structure where it added more layers than the project needed.
+- **Test-first delivery.** I asked for a failing test commit before each implementation commit and a
+  `Co-authored-by` trailer on every AI-assisted commit. The model wrote the Vitest/Supertest suites,
+  the React Testing Library tests and the Playwright journeys. I checked that each test described
+  behaviour rather than implementation.
+- **The purchase rule.** The important domain rule was mine: never oversell and never let stock go
+  negative. I directed the model to use a single conditional `UPDATE ... WHERE quantity > 0` inside
+  a transaction rather than a read-then-write, and to return `409` for the loser of a race. That
+  decision came before the code; the model implemented and tested it.
+- **Admin and UI work.** The model built the inventory table, dialogs, URL-synced filters, the
+  300 ms debounce, and the optimistic purchase update with rollback. I set the "Autoline" visual
+  direction and reviewed the result at desktop and mobile widths.
+- **Debugging.** When the Playwright run failed, I asked for the failing trace rather than a guess.
+  That exposed empty accessible names on the vehicle links and a race with the debounced search.
+  The fixes were test changes plus `aria-label`s, not cosmetic patches.
+
+### Reflection
+
+The model was fastest at boilerplate: workspace wiring, CRUD routes, migration files, form markup
+and the first draft of every test. It was less reliable on the things that need judgement. It
+initially missed the accessible-name failure, produced duplicate-text assertions that broke when
+the same stock label appeared twice, and needed the atomic purchase rule stated explicitly instead
+of inferring it. It also could not judge whether the mobile layout looked right; that check stayed
+with me.
+
+What changed in how I work is that I now give the model a tighter specification and better
+evidence: the failing test, the exact domain invariant, the response shape I expect. Tests first
+are not just for coverage — they give the model something concrete to satisfy and give me a diff I
+can judge. I read every commit and keep the product decisions — roles, money in cents, stock rules
+and the visual direction — human.
