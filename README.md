@@ -131,9 +131,9 @@ edit/delete flow, and the disabled purchase action for an out-of-stock vehicle.
 
 The API suite runs against PostgreSQL and exercises the HTTP surface end to end; the web suite
 covers auth guards, the listing card, login, purchase states and the admin console. The
-[test report](docs/test-report.html) collects the counts and links to the generated HTML coverage
-for [the API](docs/test-coverage/api/index.html) and [the web app](docs/test-coverage/web/index.html).
-GitHub Actions runs typecheck, lint, coverage and build on every push.
+[test report](docs/test-report.html) collects the counts. Run `npm run test:coverage` to generate
+the HTML coverage reports locally under `apps/api/coverage` and `apps/web/coverage`. GitHub Actions
+runs typecheck, lint, coverage and build on every push.
 
 ## API
 

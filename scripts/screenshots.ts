@@ -181,14 +181,24 @@ try {
   await shot("08-admin-form");
   await page.keyboard.press("Escape");
 
-  const mobile = await context.newPage();
-  await mobile.setViewportSize({ width: 375, height: 812 });
-  await mobile.goto(`${base}/`);
+  const mobileContext = await browser.newContext({
+    viewport: { width: 375, height: 812 },
+    deviceScaleFactor: 1,
+  });
+  const mobile = await mobileContext.newPage();
+  mobile.setDefaultTimeout(25_000);
+  await mobile.goto(`${base}/login`);
+  await mobile.getByText("Welcome back").waitFor();
+  await mobile.getByLabel("Email").fill(buyer.email);
+  await mobile.getByLabel("Password").fill(buyer.password);
+  await mobile.getByRole("button", { name: "Sign in" }).press("Enter");
+  await mobile.waitForURL(`${base}/`);
   await mobile.getByRole("heading", { name: /Find your/ }).waitFor();
   await mobile.waitForLoadState("networkidle");
   await mobile.waitForTimeout(1200);
   await mobile.screenshot({ path: `${out}/09-mobile.png`, animations: "disabled" });
   console.log("shot 09-mobile");
+  await mobileContext.close();
 } finally {
   await browser.close();
 }

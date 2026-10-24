@@ -112,6 +112,37 @@ screenshots from the running app, committed a script that regenerates them, rewr
 with the screenshots and test evidence, generated HTML coverage for both workspaces, and added a
 GitHub Actions workflow that runs typecheck, lint, coverage and build against PostgreSQL 16.
 
-**User:** no further prompts; the agent completed the test evidence and commit cleanup.
+**Assistant:** completed the test evidence and commit cleanup.
+
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (local run and final checks)
+
+**User:**
+
+```
+run in my system
+```
+
+**Assistant:** verified PostgreSQL on 5432, the API healthy on 3000 and the web app serving on
+5173, checked the demo login and the 24 seeded vehicles, then opened the app in the browser.
+
+**User:**
+
+```
+open admin page in my system
+```
+
+**Assistant:** signed in as the admin in a separate visible Chrome session and opened `/admin`,
+leaving the customer tab untouched.
+
+**User:**
+
+```
+continue with the phase
+```
+
+**Assistant:** finished Phase 7: regenerated the screenshots with a clean customer mobile
+capture, fixed the test report's ASCII text and broken coverage links, reran coverage (65 API +
+19 web tests), lint and build, passed all three Playwright journeys, confirmed 24 seed vehicles
+with no leftover E2E listings, and committed the evidence.
 
 
