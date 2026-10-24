@@ -39,3 +39,22 @@ export function PublicOnly({ children }: { children: ReactNode }) {
 
   return children;
 }
+
+/** Blocks customers from the admin console; the API enforces the same rule. */
+export function AdminOnly({ children }: { children: ReactNode }) {
+  const { status, user } = useAuth();
+
+  if (status === "loading") {
+    return <FullPageLoader label="Checking your session" />;
+  }
+
+  if (status === "anonymous") {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}

@@ -44,6 +44,11 @@ export function Layout() {
             <NavLink to="/garage" className={navClass}>
               Garage
             </NavLink>
+            {user?.role === "admin" ? (
+              <NavLink to="/admin" className={navClass}>
+                Admin
+              </NavLink>
+            ) : null}
           </nav>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-4">

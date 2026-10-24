@@ -1,11 +1,13 @@
 import type {
   ApiErrorBody,
   AuthResponse,
+  CreateVehicleInput,
   LoginInput,
   PublicUser,
   PurchaseListResponse,
   PurchaseResponse,
   RegisterInput,
+  UpdateVehicleInput,
   Vehicle,
   VehicleCategory,
   VehicleListResponse,
@@ -156,6 +158,34 @@ export const api = {
       method: "POST",
       body: JSON.stringify({}),
     });
+  },
+
+  async restockVehicle(id: string, quantity: number): Promise<Vehicle> {
+    const response = await request<{ vehicle: Vehicle }>(`/vehicles/${id}/restock`, {
+      method: "POST",
+      body: JSON.stringify({ quantity }),
+    });
+    return response.vehicle;
+  },
+
+  async createVehicle(input: CreateVehicleInput): Promise<Vehicle> {
+    const response = await request<{ vehicle: Vehicle }>("/vehicles", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return response.vehicle;
+  },
+
+  async updateVehicle(id: string, input: UpdateVehicleInput): Promise<Vehicle> {
+    const response = await request<{ vehicle: Vehicle }>(`/vehicles/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+    return response.vehicle;
+  },
+
+  deleteVehicle(id: string): Promise<void> {
+    return request<void>(`/vehicles/${id}`, { method: "DELETE" });
   },
 
   listPurchases(): Promise<PurchaseListResponse> {

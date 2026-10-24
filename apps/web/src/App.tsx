@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
-import { PublicOnly, Protected } from "./auth/guards.js";
+import { AdminOnly, PublicOnly, Protected } from "./auth/guards.js";
 import { Layout } from "./components/Layout.js";
+import { AdminPage } from "./pages/AdminPage.js";
 import { DashboardPage } from "./pages/DashboardPage.js";
 import { GaragePage } from "./pages/GaragePage.js";
 import { LoginPage } from "./pages/LoginPage.js";
@@ -37,6 +38,14 @@ export function App() {
         <Route index element={<DashboardPage />} />
         <Route path="vehicles/:id" element={<VehicleDetailPage />} />
         <Route path="garage" element={<GaragePage />} />
+        <Route
+          path="admin"
+          element={
+            <AdminOnly>
+              <AdminPage />
+            </AdminOnly>
+          }
+        />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
