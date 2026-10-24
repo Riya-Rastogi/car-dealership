@@ -98,4 +98,20 @@ or ai how i use and which command i give keep fewer ai command
 **Assistant:** shortened the section again, replacing the long bullet list with the five short
 prompts that drove the build and a brief note on the decisions kept human.
 
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (test evidence)
+
+**User:**
+
+```
+whatever changes happending show in my system live and continue
+```
+
+**Assistant:** kept the API on port 3000 and the Vite app on 5173 while finishing the UI, then
+added Playwright journeys for purchase, admin CRUD and the sold-out guard. Captured nine README
+screenshots from the running app, committed a script that regenerates them, rewrote the README
+with the screenshots and test evidence, generated HTML coverage for both workspaces, and added a
+GitHub Actions workflow that runs typecheck, lint, coverage and build against PostgreSQL 16.
+
+**User:** no further prompts; the agent completed the test evidence and commit cleanup.
+
 
