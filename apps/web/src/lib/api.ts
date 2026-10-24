@@ -16,6 +16,15 @@ import type {
 
 const TOKEN_KEY = "autoline.token";
 
+/**
+ * In development Vite proxies `/api` to the local Express server. A split
+ * deployment sets VITE_API_URL to the API base, including the `/api` prefix.
+ */
+export function apiUrl(path: string): string {
+  const base = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/+$/, "");
+  return `${base}${path}`;
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -63,7 +72,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
 
   try {
-    response = await fetch(`/api${path}`, { ...init, headers });
+    response = await fetch(apiUrl(path), { ...init, headers });
   } catch {
     throw new ApiError(0, "NETWORK_ERROR", "Cannot reach the API. Is the server running?");
   }
