@@ -197,10 +197,10 @@
       </p>
 
       <div class="cards">
-        <div class="card"><strong>84</strong><span>API + component tests passing</span></div>
+        <div class="card"><strong>89</strong><span>API + component tests passing</span></div>
         <div class="card"><strong>3</strong><span>Playwright journeys passing</span></div>
-        <div class="card"><strong>80.7%</strong><span>API statement coverage</span></div>
-        <div class="card"><strong>46.9%</strong><span>Web statement coverage</span></div>
+        <div class="card"><strong>80.8%</strong><span>API statement coverage</span></div>
+        <div class="card"><strong>47.0%</strong><span>Web statement coverage</span></div>
       </div>
 
       <section>
@@ -208,16 +208,16 @@
         <p class="note">
           Vitest + Supertest against PostgreSQL <code>dealer_test</code>. Every file truncates the
           database, so runs are isolated and require a database whose name ends in
-          <code>_test</code>.
+          <code>_test</code>. Covers auth, RBAC, validation, CORS and the atomic purchase path.
         </p>
         <table>
           <tbody>
-            <tr><th>Test files</th><td class="num">13</td></tr>
-            <tr><th>Tests</th><td class="num">65 passing</td></tr>
-            <tr><th>Statements</th><td class="num">80.69% (631 / 782)</td></tr>
-            <tr><th>Branches</th><td class="num">90.00% (126 / 140)</td></tr>
+            <tr><th>Test files</th><td class="num">14</td></tr>
+            <tr><th>Tests</th><td class="num">68 passing</td></tr>
+            <tr><th>Statements</th><td class="num">80.83% (637 / 788)</td></tr>
+            <tr><th>Branches</th><td class="num">90.07% (127 / 141)</td></tr>
             <tr><th>Functions</th><td class="num">86.95% (40 / 46)</td></tr>
-            <tr><th>Lines</th><td class="num">80.69% (631 / 782)</td></tr>
+            <tr><th>Lines</th><td class="num">80.83% (637 / 788)</td></tr>
             <tr>
               <th>HTML report</th>
               <td>Run <code>npm run test:coverage</code> to generate it locally.</td>
@@ -230,16 +230,16 @@
         <h2>Web component suite</h2>
         <p class="note">
           Vitest + Testing Library in jsdom. Covers the auth guards, the listing card, login,
-          vehicle purchase states and the admin console.
+          vehicle purchase states, the configurable API base and the admin console.
         </p>
         <table>
           <tbody>
-            <tr><th>Test files</th><td class="num">5</td></tr>
-            <tr><th>Tests</th><td class="num">19 passing</td></tr>
-            <tr><th>Statements</th><td class="num">46.89% (1315 / 2804)</td></tr>
-            <tr><th>Branches</th><td class="num">64.17% (163 / 254)</td></tr>
-            <tr><th>Functions</th><td class="num">46.46% (46 / 99)</td></tr>
-            <tr><th>Lines</th><td class="num">46.89% (1315 / 2804)</td></tr>
+            <tr><th>Test files</th><td class="num">6</td></tr>
+            <tr><th>Tests</th><td class="num">21 passing</td></tr>
+            <tr><th>Statements</th><td class="num">46.97% (1319 / 2808)</td></tr>
+            <tr><th>Branches</th><td class="num">64.45% (165 / 256)</td></tr>
+            <tr><th>Functions</th><td class="num">47.00% (47 / 100)</td></tr>
+            <tr><th>Lines</th><td class="num">46.97% (1319 / 2808)</td></tr>
             <tr>
               <th>HTML report</th>
               <td>Run <code>npm run test:coverage</code> to generate it locally.</td>

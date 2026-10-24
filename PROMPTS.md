@@ -145,4 +145,12 @@ capture, fixed the test report's ASCII text and broken coverage links, reran cov
 19 web tests), lint and build, passed all three Playwright journeys, confirmed 24 seed vehicles
 with no leftover E2E listings, and committed the evidence.
 
+## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (deployment readiness)
 
+**User:**
+
+```
+continue
+```
+
+**Assistant:** audited the remaining Phase 8 items and found two deployment blockers: the API had no CORS middleware and the SPA hardcoded `/api`. Added failing tests first, then a comma-separated CORS allowlist and `VITE_API_URL` support for split deployments. Added the Render blueprint, Vercel config, MIT licence, environment table, architecture diagram, curl examples, design decisions and deployment steps, and regenerated coverage for the new tests (68 API + 21 web).
