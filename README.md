@@ -1,24 +1,30 @@
 # Autoline — Car Dealership Inventory
 
-Autoline is a complete car dealership application with two sides: a storefront where customers
-search the lot and buy a car, and an admin console where staff add, edit, restock and remove
-listings. It is a real full-stack app, not a mock: React runs in the browser, an Express API holds
-the rules, and PostgreSQL stores the cars, accounts and purchases.
+Autoline is a complete car dealership application with two sides: a customer storefront and an admin
+console. React runs in the browser, an Express API owns the rules, and PostgreSQL stores the cars,
+accounts and purchases.
 
-The project was built test-first. Each feature started with a failing test, then the smallest
-implementation that made it pass.
+It is a real full-stack app, not a mock. It was built test-first: each feature started with a failing
+test, then the smallest implementation that made it pass.
 
-> **Status:** live at **[car-dealership-nu-six.vercel.app](https://car-dealership-nu-six.vercel.app)**,
-> with the API and PostgreSQL on Render. 68 API tests, 21 web tests and 3 Playwright journeys pass.
+**Live demo:** [car-dealership-nu-six.vercel.app](https://car-dealership-nu-six.vercel.app) ·
+**API health:** [autoline-api.onrender.com/api/health](https://autoline-api.onrender.com/api/health)
+
+| At a glance       | Details                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| **Stack**         | React 19 · Vite · Tailwind CSS v4 · TanStack Query · Express 5 · Drizzle ORM · PostgreSQL 16  |
+| **Tests**         | 68 API · 21 web · 3 Playwright journeys passing                                               |
+| **Documentation** | [System design](#system-design) · [Test report](docs/test-report.html) · [AI log](PROMPTS.md) |
+| **Deployment**    | SPA on Vercel · API and PostgreSQL on Render                                                  |
 
 ## Contents
 
 - [What you can do](#what-you-can-do)
-- [Live demo](#live-demo)
 - [Demo accounts](#demo-accounts)
+- [Live demo](#live-demo)
 - [Screenshots](#screenshots)
-- [How it works](#how-it-works)
-- [Run it on your computer](#run-it-on-your-computer)
+- [System design](#system-design)
+- [Run it locally](#run-it-locally)
 - [Troubleshooting](#troubleshooting)
 - [Everyday commands](#everyday-commands)
 - [Project layout](#project-layout)
@@ -30,19 +36,30 @@ implementation that made it pass.
 
 ## What you can do
 
+### Shop
+
 - **Browse the lot.** Search by make or model, filter by body style and price, and sort the results.
-  Every filter is kept in the URL, so refreshing the page or using the back button does not lose
-  your place. Search waits 300 ms after you stop typing before it runs.
+  Every filter lives in the URL, so refreshing, using the back button or sharing a link keeps the
+  same view. Search waits 300 ms after you stop typing before it runs.
 - **Inspect a car.** Open any vehicle to see its photos, description, year, price and live stock
   count.
-- **Buy a car.** Confirm the purchase in a dialog. The stock count drops immediately, and the car
-  appears in your garage with the price you paid. When the last car is gone the button is disabled
-  and reads **Out of stock**.
+- **Buy a car.** Confirm the purchase in a dialog. Stock drops immediately and the car appears in
+  your garage with the price you paid. When the last unit is gone the button is disabled and reads
+  **Out of stock**.
 - **See your garage.** Every purchase is listed with its date, unit price and total.
-- **Manage the lot as an admin.** Create and edit listings, restock units and delete cars. Stock can
-  only change through a purchase or a restock, never through a normal edit.
-- **Register and sign in.** Accounts are protected with JWTs. Customers can browse, buy and create
-  listings; only admins can delete or restock.
+
+### Manage
+
+- **Run the lot as an admin.** Create and edit listings, restock units and delete cars.
+- **Keep stock honest.** Stock can only change through a purchase or a restock, never through a
+  normal edit.
+- **Enforce roles on the server.** Customers can browse, buy and create listings; only admins can
+  delete or restock. The API returns `403` even when the UI hides the control.
+
+### Sign in
+
+- **Register and authenticate.** Accounts are protected with JWTs. The browser stores the access
+  token and sends it as a Bearer header on every API call.
 
 ## Demo accounts
 
@@ -82,49 +99,156 @@ These were captured from the running app at 1440×1000 by `npm run screenshots`.
 
 <img src="docs/screenshots/09-mobile.png" alt="Mobile catalogue at 375 by 812" width="375">
 
-## How it works
+## System design
+
+Autoline has three runtime parts:
+
+- **The browser** runs the React SPA. It renders the catalogue, forms and garage, and sends actions to
+  the API.
+- **The API** is the rulebook. It authenticates the caller, validates input, applies the stock and
+  price rules, and refuses actions the caller is not allowed to take.
+- **PostgreSQL** is the memory. It keeps every car, account and purchase, even after the API
+  restarts.
+
+[![Autoline system design: the React SPA is served by Vercel and calls an Express API on Render, which applies CORS and JWT auth, routes requests through services and Drizzle repositories, and reads and writes PostgreSQL tables for users, vehicles and purchases](docs/system-design.png)](docs/system-design.svg)
+
+The diagram is rendered as an image so it displays in every Markdown viewer. Click it for the vector
+version, or open the Mermaid source below to edit it.
+
+<details>
+<summary><strong>System design — Mermaid source</strong></summary>
+
+```mermaid
+flowchart TB
+    subgraph Client["Client"]
+        SPA["React 19 SPA<br/>Vite · Tailwind v4 · TanStack Query"]
+        Token["JWT in localStorage"]
+    end
+
+    subgraph Hosting["Static hosting"]
+        Vercel["Vercel CDN<br/>apps/web/dist"]
+    end
+
+    subgraph API["Express 5 API on Render"]
+        Middleware["Middleware<br/>CORS allowlist · JSON parser · error envelope"]
+        Guards["Auth guards<br/>requireAuth · requireAdmin"]
+        Routers["Routers<br/>auth · vehicles · inventory"]
+        Services["Services<br/>stock · pricing · ownership rules"]
+        Repositories["Repositories<br/>Drizzle ORM"]
+    end
+
+    subgraph DB["PostgreSQL 16"]
+        Users[("users")]
+        Vehicles[("vehicles")]
+        Purchases[("purchases")]
+    end
+
+    Contract["@dealer/shared<br/>Zod schemas · types · error codes"]
+
+    Vercel -->|"serves"| SPA
+    Token -.->|"Bearer token"| SPA
+    SPA -->|"HTTPS + JSON<br/>/api/*"| Middleware
+    Middleware --> Guards
+    Guards --> Routers
+    Routers --> Services
+    Services --> Repositories
+    Repositories -->|"SQL in a transaction"| Users
+    Repositories -->|"SQL in a transaction"| Vehicles
+    Repositories -->|"SQL in a transaction"| Purchases
+    Contract -.->|"compile-time contract"| SPA
+    Contract -.->|"request validation"| Routers
+```
+
+</details>
+
+### Request path
+
+1. Vercel serves the built SPA; React Router renders the page and TanStack Query owns server state.
+2. Every request goes through `apiUrl()`: `/api` locally, where Vite proxies to the API, or
+   `VITE_API_URL` in a split deployment. Authenticated calls carry `Authorization: Bearer <JWT>`.
+3. Express applies the CORS allowlist, parses JSON, then `requireAuth` verifies the JWT and attaches
+   `{ id, role }` to the request. Admin-only routes add `requireAdmin`.
+4. Routers map paths and status codes to services. Services hold the stock, pricing and ownership
+   rules. Repositories are the only modules that import Drizzle.
+5. PostgreSQL stores users, vehicles and purchases. The purchase decrement and the receipt insert
+   share one transaction.
+
+The API is layered but thin:
+
+| Layer       | Responsibility                                   | Location                                 |
+| ----------- | ------------------------------------------------ | ---------------------------------------- |
+| SPA         | Routing, forms, query cache, optimistic purchase | `apps/web/src`                           |
+| HTTP API    | CORS, JSON parsing, status codes, error envelope | `apps/api/src/app.ts`, `*.routes.ts`     |
+| Auth        | JWT verification, `requireAuth`, `requireAdmin`  | `apps/api/src/middleware/auth.ts`        |
+| Rules       | Stock, pricing, ownership and not-found mapping  | `apps/api/src/modules/*/*.service.ts`    |
+| Data access | The only layer that imports Drizzle              | `apps/api/src/modules/*/*.repository.ts` |
+| Contract    | Zod schemas, shared types and error codes        | `packages/shared/src/index.ts`           |
+| Database    | Users, vehicles and purchases                    | PostgreSQL 16                            |
+
+The shared Zod package is the contract both sides compile against, so the SPA cannot silently drift
+from the API.
+
+<details>
+<summary><strong>Purchase transaction (sequence)</strong></summary>
+
+[![Purchase transaction sequence: the API verifies the JWT, runs a conditional stock decrement and inserts the purchase in one transaction, then returns 200; a missing row returns 404 or 409 and the UI rolls back](docs/purchase-sequence.png)](docs/purchase-sequence.svg)
+
+</details>
+
+<details>
+<summary><strong>Purchase transaction — Mermaid source</strong></summary>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant SPA as React SPA
+    participant API as Express API
+    participant DB as PostgreSQL 16
+
+    Customer->>SPA: Confirm purchase
+    SPA->>API: POST /api/vehicles/:id/purchase<br/>Bearer JWT
+    API->>API: requireAuth verifies the JWT
+    API->>DB: BEGIN
+    API->>DB: UPDATE vehicles SET quantity = quantity - 1<br/>WHERE id = :id AND quantity is positive
+    alt Row returned
+        DB-->>API: vehicle row
+        API->>DB: INSERT INTO purchases (vehicle_id, user_id, unit_price_cents, total_cents)
+        DB-->>API: purchase row
+        API->>DB: COMMIT
+        API-->>SPA: 200 { vehicle, purchase }
+        SPA-->>Customer: Toast, stock decremented, garage updated
+    else No row returned
+        DB-->>API: no row
+        API->>DB: SELECT id FROM vehicles WHERE id = :id
+        Note over API: Missing vehicle → 404<br/>Existing vehicle → 409
+        API->>DB: COMMIT (no writes)
+        API-->>SPA: 404 or 409
+        SPA-->>Customer: Roll back the optimistic update and refetch
+    end
+```
+
+</details>
+
+<details>
+<summary><strong>Illustrated architecture map</strong></summary>
 
 [![How Autoline works: the browser talks to the server, the server reads and writes the database, and a four-step purchase flow prevents overselling](docs/architecture.png)](docs/architecture.svg)
 
 The image links to the editable [SVG source](docs/architecture.svg).
 
-There are only three parts:
+</details>
 
-- **Your browser** runs the website. It shows the catalogue, forms and your garage, and sends your
-  actions to the server.
-- **The server** is the rulebook. It checks who you are, applies the stock and price rules, and
-  refuses actions you are not allowed to take.
-- **The database** is the memory. It keeps every car, account and purchase, even after the server
-  restarts.
+## Run it locally
 
-The bottom half of the picture follows one purchase. When you press **Buy**, the browser sends one
-request. The server takes a car off the shelf in a single, unbreakable database step and saves the
-receipt in the same transaction. If two people reach for the last car at the same moment, only one
-succeeds; the other gets a `409` and sees **Out of stock**. Stock can never go below zero.
+You need a terminal and about 15 minutes. Commands are shown for macOS/Linux; Windows PowerShell
+differences are shown where they matter.
 
-### Under the hood
-
-The API is layered but thin: routes wire paths and middleware, controllers map HTTP to services,
-services hold the rules (stock, ownership, pricing), and repositories are the only modules that
-import Drizzle. The shared Zod package is the contract both sides compile against, so the SPA cannot
-silently drift from the API.
-
-| Layer    | Choice                                          |
-| -------- | ----------------------------------------------- |
-| API      | Node 22+, TypeScript, Express 5, Drizzle ORM    |
-| Database | PostgreSQL 16 (local server or Docker Compose)  |
-| Frontend | React 19, Vite, Tailwind CSS v4, TanStack Query |
-| Tests    | Vitest, Supertest, Testing Library, Playwright  |
-| Tooling  | npm workspaces, ESLint 9, Prettier              |
-
-The brief suggested Bun workspaces. This implementation uses npm workspaces instead, so it runs with
-the Node/npm toolchain most machines already have. It is still one install and one CI run.
-
-## Run it on your computer
-
-You do not need to know the code to run this. You need a terminal and about 15 minutes.
-
-Commands are shown for macOS/Linux. Where Windows PowerShell is different, both versions are shown.
+> **In a hurry?** Install Node 22 and Docker (or PostgreSQL 16), run `npm install`, start PostgreSQL,
+> copy `.env.example` to `.env` and set `JWT_SECRET`, run
+> `npm run db:create && npm run db:migrate && npm run db:seed`, then start `npm run dev:api` and
+> `npm run dev:web` in two terminals. The steps below explain each command and cover the
+> native-PostgreSQL path.
 
 ### What you need
 
@@ -390,7 +514,7 @@ car-dealership/
 │     └─ public/cars/  Local vehicle photos and attribution
 ├─ packages/
 │  └─ shared/       Zod schemas, types, roles and error codes used by both sides
-├─ docs/            Architecture, screenshots and test evidence
+├─ docs/            Architecture, screenshots, test report and coverage
 ├─ scripts/         Commit hook, installer and screenshot script
 ├─ .github/         CI workflow with a PostgreSQL 16 service
 ├─ docker-compose.yml
@@ -421,8 +545,8 @@ the API directly.
 | POST   | `/api/vehicles/:id/restock`  | admin  | 200 `{ vehicle }`, positive integer only       |
 | GET    | `/api/purchases`             | user   | caller's history, newest first                 |
 
-Money is stored and returned as integer cents (`priceCents`, `unitPriceCents`, `totalCents`).
-List filters accept whole dollars (`minPrice`, `maxPrice`) and are converted server-side.
+Money is stored and returned as integer cents (`priceCents`, `unitPriceCents`, `totalCents`). List
+filters accept whole dollars (`minPrice`, `maxPrice`) and are converted server-side.
 
 ### Examples
 
@@ -491,8 +615,8 @@ GitHub Actions runs typecheck, lint, coverage and build on every push.
 - **Shared inventory, role-based writes.** Any authenticated user can create and edit listings;
   only admins can delete or restock. The API enforces `403` even when the UI hides the controls.
 - **Filters live in the URL.** Page, search, category, price and sort are query parameters, so
-  refresh, back/forward and shared links restore the view. The search box debounces for 300 ms
-  before it writes the URL.
+  refresh, back/forward and shared links restore the view. The search box debounces for 300 ms before
+  it writes the URL.
 - **Optimistic purchase with rollback.** The mutation decrements the cached vehicle immediately,
   shows a toast, then reconciles with the response. A `409` rolls the cache back and refetches.
 - **Token in `localStorage`.** Simple for a demo, with a global `401` event that clears the session.
@@ -500,8 +624,8 @@ GitHub Actions runs typecheck, lint, coverage and build on every push.
 - **Local photography.** Seed images are local Wikimedia Commons files with attribution in
   [`apps/web/public/cars/ATTRIBUTION.md`](./apps/web/public/cars/ATTRIBUTION.md), so the app has no
   runtime image dependency and the demo works offline.
-- **npm workspaces.** The brief suggested Bun; npm keeps the setup to Node and npm, which are
-  already required, and still gives one install and one CI run.
+- **npm workspaces.** The brief suggested Bun; npm keeps the setup to Node and npm, which are already
+  required, and still gives one install and one CI run.
 
 ## Deployment
 
@@ -547,9 +671,9 @@ every origin.
      Remove-Item Env:DATABASE_URL
      ```
 
-     If PostgreSQL rejects the connection with an SSL error, append `?sslmode=no-verify` to the
-     URL (the database is still encrypted; this only skips certificate verification for the
-     external host).
+     If PostgreSQL rejects the connection with an SSL error, append `?sslmode=no-verify` to the URL
+     (the database is still encrypted; this only skips certificate verification for the external
+     host).
 
    The seed is idempotent, so it can be run again without duplicating cars or accounts. Remove the
    temporary IP entry when you are done.
@@ -565,10 +689,10 @@ every origin.
 3. Deploy, then copy the Vercel domain into Render's `CORS_ORIGIN` and redeploy the API.
 4. Smoke test: sign in as the demo customer, filter the catalogue, buy a car and open the garage.
 
-Free Render services sleep after inactivity, so the first request after a quiet period can take
-about a minute. Free PostgreSQL databases also expire after 30 days; extend or upgrade the database
-before then if the demo should stay online. The API reads `PORT` from Render and binds to all
-interfaces automatically.
+Free Render services sleep after inactivity, so the first request after a quiet period can take about
+a minute. Free PostgreSQL databases also expire after 30 days; extend or upgrade the database before
+then if the demo should stay online. The API reads `PORT` from Render and binds to all interfaces
+automatically.
 
 ## Credits, AI use and license
 
@@ -580,9 +704,10 @@ authors, licences and source links are listed in
 
 ### AI disclosure
 
-Every AI-assisted commit carries a `Co-authored-by` trailer, and the raw prompt log lives in
+Every AI-assisted commit carries a `Co-authored-by` trailer, and the technical session log lives in
 [PROMPTS.md](./PROMPTS.md). A `commit-msg` hook enforces the trailer; `npm install` installs it, and
-`npm run prepare` reinstalls it.
+`npm run prepare` reinstalls it. The log records the prompt, implementation and verification for
+each session.
 
 ### My AI Usage
 
@@ -591,82 +716,76 @@ Every AI-assisted commit carries a `Co-authored-by` trailer, and the raw prompt 
 I used the model as a pair programmer for the wiring, not as the person who decided what to build.
 Most sessions followed the same loop: I hit a concrete problem, gave it the error and the files or
 endpoints involved, asked for the smallest fix, and then checked the result myself with a test, a
-request or the running app. The instructions below summarise the work; the raw session log is in
-[PROMPTS.md](./PROMPTS.md).
+request or the running app. The full technical record is in [PROMPTS.md](./PROMPTS.md); the summary
+below is the short version.
 
-#### 1. The frontend and backend were not connected
+**1. Frontend/backend wiring**
 
-The page loaded, but login and vehicle requests failed. I gave it the failing request and this
-instruction:
+- **Problem:** the page loaded, but login and vehicle requests failed because the SPA and API had no
+  shared base URL or CORS policy.
+- **Prompt:** "Connect the React app to the Express API. Add a Vite proxy for local development, a
+  CORS allowlist on the API, and a configurable API base for split deployments."
+- **Fix:** added the Vite `/api` proxy, `CORS_ORIGIN`, one `apiUrl()` helper and `VITE_API_URL`.
+- **Verified:** signed in through the browser and sent a CORS preflight with `curl -X OPTIONS`.
 
-> `backend is not connected with frontend — connect the React app to the Express API, fix the API base URL, and add CORS for local and deployed origins`
+**2. Atomic purchase**
 
-It added the Vite `/api` proxy for development, a `CORS_ORIGIN` allowlist on the API, a single
-`apiUrl()` helper for every request, and `VITE_API_URL` for a split deployment. I checked it by
-signing in through the browser and sending a CORS preflight with `curl -X OPTIONS`.
+- **Problem:** a read-then-write could sell the last car twice.
+- **Prompt:** "Make the purchase atomic. Stock must never go negative, and the losing request should
+  get 409."
+- **Fix:** one conditional `UPDATE ... WHERE quantity > 0` plus the purchase insert in the same
+  transaction.
+- **Verified:** concurrent purchase requests in the API suite — one succeeded, one got `409`, and
+  stock stayed at zero.
 
-#### 2. Two people could buy the last car
+**3. Local runtime**
 
-A read-then-write purchase would let two requests both see the last car. I asked:
+- **Problem:** the tests were green, but the app would not run on Windows.
+- **Prompt:** "Run the app against local PostgreSQL on 127.0.0.1:5432, not only in tests."
+- **Fix:** added root `.env` loading, `db:create`/`db:migrate`/`db:seed`, and separate API and web
+  dev servers.
+- **Verified:** opened `localhost:5173`, signed in, bought a car and read the purchase back from the
+  garage.
 
-> `make the purchase atomic — stock must never go negative, and the losing request should get 409`
+**4. URL state and search**
 
-The fix was one conditional `UPDATE ... WHERE quantity > 0` and the purchase insert in the same
-transaction. I checked it with concurrent purchase requests in the API suite: one succeeded, one got
-`409`, and the stock stayed at zero.
+- **Problem:** filters reset on refresh and search fired on every keystroke.
+- **Prompt:** "Keep page, search, category, price and sort in the URL, and debounce the search by
+  300 ms."
+- **Fix:** made `useSearchParams` the source of truth and added a 300 ms debounce before writing the
+  URL.
+- **Verified:** refresh, back/forward and a copied link all restored the view.
 
-#### 3. The app passed tests but would not run on Windows
+**5. Split deployment**
 
-The tests were green, but the app still needed a real database, environment variables and two dev
-servers. I asked:
+- **Problem:** a relative `/api` request would hit Vercel instead of Render.
+- **Prompt:** "Prepare a split deployment: API and PostgreSQL on Render, SPA on Vercel. Wire
+  `CORS_ORIGIN` and `VITE_API_URL`."
+- **Fix:** added `render.yaml`, `vercel.json`, the environment table and the configurable API base.
+- **Verified:** built the SPA with `VITE_API_URL`, confirmed the Render URL was embedded in the
+  bundle, and repeated the CORS preflight.
 
-> `run the app on my machine, not only in tests; PostgreSQL is local on 127.0.0.1:5432`
+**6. Documentation**
 
-It added root `.env` loading, the `db:create` / `db:migrate` / `db:seed` scripts, separate API and
-web dev servers, and a documented local-PostgreSQL path. I checked it by opening `localhost:5173`,
-signing in, buying a car and reading the purchase back from the garage.
-
-#### 4. Filters reset on refresh and search fired on every keystroke
-
-I asked:
-
-> `keep page, search, category, price and sort in the URL; debounce the search by 300 ms`
-
-It made `useSearchParams` the source of truth and added a 300 ms debounce before writing the URL. I
-checked refresh, back/forward and a copied link in the browser.
-
-#### 5. The deployment would call its own `/api`
-
-The SPA and API would live on different domains in production, so a relative `/api` request would
-hit Vercel instead of Render. I asked:
-
-> `prepare a split deployment: API and PostgreSQL on Render, SPA on Vercel; wire CORS_ORIGIN and VITE_API_URL`
-
-It added `render.yaml`, `vercel.json`, the environment documentation and the configurable API base.
-I checked it by building the SPA with `VITE_API_URL` set, confirming the deployed URL was embedded
-in the bundle, and repeating the CORS preflight against the local API.
-
-#### 6. The README assumed too much
-
-I asked:
-
-> `rewrite the README for someone who has never run a Node app; give steps for Windows, macOS and Linux, and explain the architecture without assuming context`
-
-That became this README. I checked the commands against this checkout and re-read the steps as a
-first-time user, removing the assumptions about Bun and my own machine's paths.
+- **Problem:** the README assumed too much context.
+- **Prompt:** "Rewrite the README for someone who has never run a Node app. Cover Windows, macOS and
+  Linux, and explain the architecture without assuming Bun or Docker."
+- **Fix:** produced this README and the illustrated system map.
+- **Verified:** ran the commands against this checkout and re-read the steps as a first-time user.
 
 #### What I kept human
 
-I decided the product rules: money in integer cents, stock changing only through purchase and
-restock, no overselling, and the Autoline design direction. I required a failing test before each
-implementation commit and read the diff before accepting it.
+- Product rules: integer cents, stock changing only through purchase and restock, no overselling,
+  role-based write access, and the Autoline visual direction.
+- A failing test before each implementation commit, and a diff review before accepting it.
+- Final verification: live browser sessions, HTTP checks and the deployment smoke test.
 
 #### Where it helped, and where it slipped
 
 The model was strongest on boilerplate, test scaffolding and wiring. It missed accessible names on
-the vehicle links, wrote duplicate-text assertions that failed when a stock label appeared twice,
-and needed the atomic-purchase rule stated explicitly. Short instructions plus tests first kept
-those mistakes visible and cheap to fix.
+the vehicle links, wrote duplicate-text assertions that failed when a stock label appeared twice, and
+needed the atomic-purchase rule stated explicitly. Short instructions plus tests first kept those
+mistakes visible and cheap to fix.
 
 ### License
 

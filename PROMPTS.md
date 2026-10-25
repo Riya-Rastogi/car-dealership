@@ -1,186 +1,336 @@
-# AI Prompt Log
+# AI Engineering Log
 
-Raw, append-only log of AI sessions, grouped by date and tool. Add prompts immediately after a
-session; do not reconstruct them from memory later. User prompts are copied verbatim. Assistant
-replies are not reproduced here unless they contain a correction worth keeping; the full working
-transcript stays in the OpenCode session.
+| Field       | Value                                                                                |
+| ----------- | ------------------------------------------------------------------------------------ |
+| **Project** | Autoline — car dealership inventory                                                  |
+| **Tool**    | OpenCode                                                                             |
+| **Model**   | DeepSeek V4.1 Flash Free                                                             |
+| **Period**  | 2026-10-23 → 2026-10-25                                                              |
+| **Method**  | red → green → refactor, smallest viable diff, verification over HTTP, browser and CI |
 
-## 2026-10-23 - OpenCode, DeepSeek V4.1 Flash Free
+This file records the AI-assisted engineering sessions as a technical log. Each entry pairs a
+plain-English prompt with the context behind it, the implementation that landed and the check that
+proved it. The prompts are written as engineering requests, not copied from a chat transcript. The
+full transcript remains in the OpenCode session.
 
-**User:**
+## Session index
 
-```
-D:\PLAN.md
-```
+| Date       | Session               | Scope                                                             | Evidence                                       |
+| ---------- | --------------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
+| 2026-10-23 | Foundation            | Monorepo, PostgreSQL schema, JWT auth, catalogue, atomic purchase | API tests, HTTP checks, browser sign-in        |
+| 2026-10-24 | Storefront + evidence | Detail/purchase/garage, admin console, photography, CI            | 68 API + 21 web + 3 E2E, coverage, screenshots |
+| 2026-10-24 | Deployment readiness  | CORS, configurable API base, Render/Vercel manifests              | Red/green tests, production build              |
+| 2026-10-24 | Live deployment       | Render + Vercel rollout, production smoke test                    | Live URLs, Playwright smoke                    |
+| 2026-10-25 | Documentation pass    | Technical log, Mermaid design, README readability                 | Prettier, link and syntax checks               |
 
-**Assistant:** read the plan and asked what to do with it.
+## 2026-10-23 — Foundation
 
-**User:** selected "Start building it".
+### 01 · Monorepo scaffold
 
-**Assistant:** asked where the repo should live and how commit trailers should be handled. The
-question was dismissed.
+**Context.** `PLAN.md` defined a two-app monorepo. The host had Node 22 and npm, but neither Bun nor
+Docker, so the brief's Bun-workspace setup had to be replaced without giving up the one-install and
+one-CI-run properties.
 
-**User:**
+**Prompt.**
 
-```
-D:\PLAN.md
-```
+> Set up the project as an npm-workspaces monorepo. I don't have Bun or Docker on this machine, so use
+> Node 22 and npm. Create `apps/api` with Express 5 and TypeScript, `apps/web` with React 19 and Vite,
+> and `packages/shared` for the Zod schemas and types. Add strict TypeScript, ESLint, Prettier,
+> Vitest, and a `/api/health` endpoint I can curl.
 
-**Assistant:** began Phase 0 at `D:\car-dealership`, using npm workspaces because Bun is not
-installed, and a local PostgreSQL 16 because Docker is not installed.
+**Implementation.**
 
-## 2026-10-23 - OpenCode, DeepSeek V4.1 Flash Free (continued)
+- Root `package.json` declares the `apps/*` and `packages/*` workspaces and requires Node 22+.
+- The shared package is built first and consumed by both apps.
+- The API exposes an app factory (`createApp`) separate from the listener, so Supertest can drive it
+  without opening a port.
+- The health route is mounted at `/api/health`; central error middleware returns a stable error
+  envelope.
+- `scripts/install-hooks.mjs` installs the `commit-msg` hook that enforces the AI co-author trailer.
 
-**User:** no further prompts; the agent continued executing PLAN.md.
+**Verification.** `npm run typecheck`, `npm run lint` and `npm test` passed; `GET /api/health`
+returned `200`.
 
-**Assistant:** completed Phase 0 (scaffold, health check, commit hook) and Phase 1 (register,
-login, `/me`, admin guard). Every feature landed as a failing test commit followed by a passing
-implementation commit. Test database is `dealer_test`; truncation refuses any database whose name
-does not end in `_test`.
+### 02 · Persistence and test isolation
 
-**User:** run the code in my system
+**Context.** PostgreSQL 16 was already running at `127.0.0.1:5432`. The API suite needed a disposable
+database that could not damage development data.
 
-**Assistant:** committed the red vehicle-list test, started the API on port 3000 and Vite on port
-5173, applied the missing development migration, and verified register, login and `/api/auth/me`
-over real HTTP.
+**Prompt.**
 
-**User:** doirectly run in myststem
+> Add the database layer with Drizzle and PostgreSQL 16. Create `users`, `vehicles` and `purchases`
+> with UUIDs, foreign keys, non-negative checks for price and quantity, and indexes for the filters.
+> I need a separate `dealer_test` database: the tests should migrate it, truncate it before each test,
+> and refuse to run if the database name doesn't end in `_test`.
 
-**Assistant:** opened `http://localhost:5173` in the default browser and continued the vehicle
-list implementation while the servers stayed up.
+**Implementation.**
 
-**User:** run code in mystem
+- `users`: unique email, Argon2id hash, `role` (`customer` | `admin`), timestamps.
+- `vehicles`: make, model, category, `price_cents`, `quantity`, year, description, `image_url`,
+  timestamps.
+- `purchases`: vehicle and user foreign keys, quantity, `unit_price_cents`, `total_cents`, timestamp.
+- Vitest global setup runs migrations against `DATABASE_URL_TEST`; `setup-db.ts` truncates public
+  tables and throws unless `NODE_ENV=test` and the database name ends in `_test`.
+- API test files run serially (`fileParallelism: false`) because they share one test database.
 
-**Assistant:** confirmed both servers, seeded the demo accounts, and left the running app open at
-`http://localhost:5173`.
+**Verification.** `npm run db:migrate` applied the schema; the suite created and truncated only
+`dealer_test`; a deliberately non-`_test` URL failed the guard.
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free
+### 03 · Authentication and role enforcement
 
-**User:**
+**Prompt.**
 
-```
-continue with the next steps
-```
+> Add registration, login and a `/me` endpoint. Hash passwords with Argon2id, return a JWT, and use
+> 409 for a duplicate email and 401 for bad credentials. Also add `requireAuth` and `requireAdmin`
+> middleware so a customer gets 403 on admin routes. Validate the bodies with the shared Zod schemas.
 
-**Assistant:** completed the vehicle detail, confirmation-dialog purchase flow and customer
-garage, then wired their routes and verified them in Chrome against the running API. Replaced the
-reused stock photos with model-accurate local Wikimedia Commons images and committed the
-attribution file. Finished the admin inventory console and Playwright journeys (purchase → garage,
-admin create/restock/edit/delete, out-of-stock purchase guard), fixed the vehicle links'
-accessible names, and updated the README with the local PostgreSQL and test commands.
+**Implementation.**
 
-**User:**
+- Argon2id hashing is isolated in `lib/passwords.ts`.
+- The JWT carries `sub` (user id) and `role` and expires after 60 minutes.
+- Registration checks for an existing email first, then catches PostgreSQL unique violations so a race
+  still returns `409 EMAIL_TAKEN`.
+- Login returns the same `401` for an unknown email and a wrong password.
+- `requireAuth` attaches `{ id, role }` to the request; `requireAdmin` runs after it and is enforced
+  server-side even when the UI hides the control.
+- Validation failures return `400 VALIDATION_ERROR` with field details.
 
-```
-can you write ai usage section by urself mentionion some imprtange image as a human we give to model
-```
+**Verification.** API tests covered registration, duplicate email, login, bad credentials, `/me`,
+missing tokens and a customer calling an admin route; manual `curl` requests confirmed the same
+behaviour against the running API.
 
-**Assistant:** wrote the "My AI Usage" section in the first person, covering the tool used, the
-test-first workflow, the atomic-purchase decision, and the role of visual evidence — screenshots and
-model-accurate car photography — as human input to the model.
+### 04 · Vehicle catalogue and inventory rules
 
-**User:**
+**Prompt.**
 
-```
-not image can you write the ai usage section by yuself
-```
+> Build the vehicle API: list with search, filter, sort and pagination, get one, create, partial update
+> and delete. Prices are integer cents. Don't allow `quantity` through the normal update. Only admins
+> can delete or restock. For purchase, decrement stock and write the receipt in one transaction so two
+> people can't buy the last car; the loser gets 409.
 
-**Assistant:** rewrote the "My AI Usage" section without the image discussion, keeping the
-first-person account of the tool, the test-first workflow, the atomic purchase decision and the
-reflection.
+**Implementation.**
 
-**User:**
+- `vehicleListQuerySchema` defaults to `sort=newest`, `page=1`, `limit=12`; `minPrice` and `maxPrice`
+  are whole dollars converted at the repository edge.
+- `PUT /vehicles/:id` uses strict schemas, so `quantity` is rejected rather than silently ignored.
+- `DELETE /vehicles/:id` and `POST /vehicles/:id/restock` require `admin`.
+- Purchase runs
+  `UPDATE vehicles SET quantity = quantity - 1 WHERE id = $1 AND quantity > 0 RETURNING *` inside
+  `db.transaction`, then inserts the purchase row. Under `READ COMMITTED`, a concurrent transaction
+  waits for the row lock and re-evaluates the predicate, so only one buyer can take the last unit.
+- A malformed UUID is mapped to `404` before it reaches PostgreSQL's `22P02`.
+- Purchase history is scoped to the caller.
 
-```
-or ai how i use and which command i give keep fewer ai command
-```
+**Verification.** API tests covered filters, sorting, pagination, validation, role rules, restock
+quantity, purchase history and concurrent purchase. One request succeeded, the other returned `409`,
+and stock stayed at zero.
 
-**Assistant:** shortened the section again, replacing the long bullet list with the five short
-prompts that drove the build and a brief note on the decisions kept human.
+### 05 · Local runtime verification
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (test evidence)
+**Context.** The API passed tests but had not yet run as a real process against the native database.
 
-**User:**
+**Prompt.**
 
-```
-whatever changes happending show in my system live and continue
-```
+> Run the app for real now, not just in tests. Start the API on 3000 and Vite on 5173 against local
+> PostgreSQL, apply the migration, seed the two demo accounts and 24 cars, then check register, login
+> and `/me` over HTTP.
 
-**Assistant:** kept the API on port 3000 and the Vite app on 5173 while finishing the UI, then
-added Playwright journeys for purchase, admin CRUD and the sold-out guard. Captured nine README
-screenshots from the running app, committed a script that regenerates them, rewrote the README
-with the screenshots and test evidence, generated HTML coverage for both workspaces, and added a
-GitHub Actions workflow that runs typecheck, lint, coverage and build against PostgreSQL 16.
+**Implementation.**
 
-**Assistant:** completed the test evidence and commit cleanup.
+- Root `.env` loading in the API config, with fail-fast validation of `DATABASE_URL` and a 32+
+  character `JWT_SECRET`.
+- `db:create`, `db:migrate` and `db:seed` scripts; the seed is idempotent and creates
+  `demo@autoline.dev` and `admin@autoline.dev`.
+- Vite proxies `/api` to `http://localhost:3000`.
+- Separate `dev:api` and `dev:web` scripts so both processes run and restart independently.
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (local run and final checks)
+**Verification.** The API was healthy on `3000`, Vite served on `5173`, register/login/me returned the
+expected payloads, and the browser app loaded the seeded catalogue.
 
-**User:**
+## 2026-10-24 — Storefront, admin and test evidence
 
-```
-run in my system
-```
+### 06 · Storefront purchase flow
 
-**Assistant:** verified PostgreSQL on 5432, the API healthy on 3000 and the web app serving on
-5173, checked the demo login and the 24 seeded vehicles, then opened the app in the browser.
+**Context.** The catalogue rendered, but vehicle detail, purchase and garage routes did not exist.
 
-**User:**
+**Prompt.**
 
-```
-open admin page in my system
-```
+> Add the vehicle detail page, a confirmation dialog before buying, an optimistic stock update that
+> rolls back if the request fails, the sold-out state, and a garage page. Make sure the vehicle links
+> have proper accessible names and the tests don't break when a stock label appears twice.
 
-**Assistant:** signed in as the admin in a separate visible Chrome session and opened `/admin`,
-leaving the customer tab untouched.
+**Implementation.**
 
-**User:**
+- React Router routes: `/`, `/vehicles/:id`, `/garage`, `/admin`, `/login`, `/register`.
+- `Protected`, `PublicOnly` and `AdminOnly` guards wrap the layout and routes.
+- TanStack Query owns server state. The purchase mutation decrements the cached vehicle immediately,
+  shows a toast, reconciles with the response, and rolls back plus refetches on `409`.
+- The purchase button is disabled and labelled **Out of stock** at zero quantity.
+- Garage reads `GET /api/purchases` and shows date, unit price and total.
 
-```
-continue with the phase
-```
+**Verification.** Component tests covered purchase states and the vehicle card; a manual Chrome run
+confirmed the flow; the later Playwright journey covered registration → search → purchase → garage.
 
-**Assistant:** finished Phase 7: regenerated the screenshots with a clean customer mobile
-capture, fixed the test report's ASCII text and broken coverage links, reran coverage (65 API +
-19 web tests), lint and build, passed all three Playwright journeys, confirmed 24 seed vehicles
-with no leftover E2E listings, and committed the evidence.
+### 07 · Admin console
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (deployment readiness)
+**Prompt.**
 
-**User:**
+> Build the admin inventory screen. Admins should be able to create, edit, restock and delete cars.
+> Use the shared validation, keep quantity out of the edit form, and hide the admin controls from
+> customers. The API still has to enforce the role, not just the UI.
 
-```
-continue
-```
+**Implementation.**
 
-**Assistant:** audited the remaining Phase 8 items and found two deployment blockers: the API had no CORS middleware and the SPA hardcoded `/api`. Added failing tests first, then a comma-separated CORS allowlist and `VITE_API_URL` support for split deployments. Added the Render blueprint, Vercel config, MIT licence, environment table, architecture diagram, curl examples, design decisions and deployment steps, and regenerated coverage for the new tests (68 API + 21 web).
+- `VehicleFormDialog` handles create and edit; edit omits `quantity`.
+- `RestockDialog` sends a positive integer to `/restock`.
+- `DeleteDialog` confirms before `DELETE`.
+- The admin page queries the catalogue and invalidates it after each mutation.
+- The UI gates on `user.role`; the API still enforces `requireAdmin`.
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (README rewrite)
+**Verification.** Component tests covered the admin gate and form validation; the Playwright journey
+covered admin create → restock → edit → delete.
 
-**User:**
+### 08 · Local, model-accurate photography
 
-```
-rewrite the readme file in human readable form and steps to run the code in other aur every system who want to run it and add a system desingn archtectureimage  to make it more undertanadble for the person who dont know whats goint on and keep all the import parts that already in and write my ai usage according to it
-```
+**Prompt.**
 
-**Assistant:** rewrote the README as a task-oriented guide with prerequisites, Docker and native-PostgreSQL paths for Windows, macOS and Linux, an environment-variable table, troubleshooting, a plain-English architecture image, the retained technical sections, and a matching AI usage section.
+> Replace the remote stock photos with local Wikimedia Commons images that actually match each make
+> and model. Add an attribution file with the author, licence and source, so the demo doesn't depend
+> on remote images.
 
-**User:**
+**Implementation.** 24 local images under `apps/web/public/cars/`, plus `ATTRIBUTION.md`; seed rows
+point at the local paths. The seed upgrades only rows that still reference the old Unsplash URLs, so
+admin-added photos are left untouched.
 
-```
-can you write other commnad rathaer than what i give you i wnat ai uses more technical i used ai to connect this and that this is the problem i am facing then i give this commnat backend is not not connected with frontwnd then i use this commnat rewrite yourself in this structure
+**Verification.** The seeded catalogue rendered every image offline; screenshots were captured from
+the running app.
 
-in ai uses in readme
-```
+### 09 · Test evidence and CI
 
-**Assistant:** restructured My AI Usage as six technical entries, each following problem → instruction → fix → verification: the frontend/backend connection, atomic purchase, local Windows run, URL-synced filters, split deployment, and the README rewrite.
+**Prompt.**
 
-## 2026-10-24 - OpenCode, DeepSeek V4.1 Flash Free (live deployment)
+> I need evidence I can rerun: HTML coverage for both workspaces, a test report, nine README
+> screenshots with a script that regenerates them, and a GitHub Actions workflow that starts
+> PostgreSQL 16 and runs typecheck, lint, coverage and build on every push.
 
-**User:**
+**Implementation.**
 
-```
-continue
-```
+- `npm run test:coverage` writes `apps/api/coverage` and `apps/web/coverage`; `scripts/screenshots.ts`
+  captures the nine images.
+- `docs/test-report.html` collects the counts and links.
+- CI starts a `postgres:16-alpine` service, creates `dealer` and `dealer_test`, migrates, then runs
+  typecheck, lint, coverage and build; coverage directories are uploaded as artifacts.
 
-**Assistant:** pushed the repo, confirmed CI green, deployed the SPA to Vercel and the API plus PostgreSQL 16 to Render. Fixed the Render login 500 by switching `DATABASE_URL` to the internal host with `sslmode=no-verify`, set `VITE_API_URL` and disabled Vercel Authentication, then ran a live Playwright smoke test: sign in, URL-synced search, purchase, garage and the disabled Out of stock button. Updated the README with the live URLs and the free-plan migration/seed path, and moved migrations into the start command because free services cannot run pre-deploy commands.
+**Verification.** 68 API + 21 web tests and 3 Playwright journeys passed; CI was green; screenshots
+were regenerated from the running app.
+
+### 10 · AI-usage documentation
+
+**Context.** The first drafts of the AI-usage section were narrative and focused on image prompting
+rather than engineering decisions.
+
+**Prompt.**
+
+> Rewrite the AI usage section in the first person. Focus on the tool and the actual engineering work,
+> not on images. Use short problem → instruction → fix → verification entries and link to the session
+> log.
+
+**Implementation.** The README section was shortened twice, then restructured around six concrete
+problems: frontend/backend wiring, atomic purchase, local Windows run, URL-synced filters, split
+deployment and documentation.
+
+**Verification.** Re-read the section as a reviewer; every claim maps to a test, an HTTP check or a
+running-app check.
+
+## 2026-10-24 — Deployment readiness
+
+### 11 · CORS and configurable API base
+
+**Context.** A deployment audit found two blockers: the API had no CORS middleware, and the SPA
+hardcoded `/api`, which would target Vercel in a split deployment.
+
+**Prompt.**
+
+> The deployment audit found two problems: the API has no CORS and the SPA hardcodes `/api`, so it
+> would call Vercel instead of Render. Write failing tests first, then add a comma-separated
+> `CORS_ORIGIN` allowlist and a `VITE_API_URL`-based `apiUrl()` helper, keeping `/api` as the local
+> default.
+
+**Implementation.**
+
+- `cors({ origin: allowedOrigins })` with trimmed, non-empty entries.
+- `apiUrl()` strips trailing slashes from `VITE_API_URL` and otherwise returns `/api`.
+- The Vite proxy remains the local path; production sets `VITE_API_URL=https://<api>/api`.
+- A global `401` event clears the stored token and session.
+
+**Verification.** The red tests failed before the change and passed after it; `curl -X OPTIONS`
+returned the expected `Access-Control-Allow-Origin`; a production build embedded the configured API
+URL.
+
+### 12 · Deployment manifests and operating docs
+
+**Prompt.**
+
+> Add the deployment files: a Render blueprint for PostgreSQL 16 and the API, a Vercel build for the
+> SPA, the environment variable table, the deployment steps and an MIT licence. Call out the
+> free-plan limits.
+
+**Implementation.** `render.yaml` provisions the database and `autoline-api`; `vercel.json` builds
+shared + web and rewrites client routes; the README documents `CORS_ORIGIN`, `VITE_API_URL`,
+migrations and seeding.
+
+**Verification.** The configuration was reviewed against both platforms; coverage was regenerated for
+the new tests (68 API + 21 web); the deployment steps were followed end to end.
+
+## 2026-10-24 — Live deployment
+
+### 13 · Render + Vercel rollout
+
+**Context.** The SPA and API run on different domains, and the Render free plan cannot run pre-deploy
+commands or open a shell.
+
+**Prompt.**
+
+> Deploy it: API and PostgreSQL on Render, SPA on Vercel. Wire `CORS_ORIGIN` and `VITE_API_URL`, run
+> migrations on API boot because the free plan has no pre-deploy command, seed the hosted database
+> from my machine, and then smoke test the live app.
+
+**Implementation.**
+
+- Render: PostgreSQL 16 + `autoline-api`; `DATABASE_URL` uses the internal host with
+  `sslmode=no-verify`; the start command is
+  `npm run db:migrate --workspace @dealer/api && npm run start --workspace @dealer/api`.
+- Vercel: root-directory build, `VITE_API_URL` set for Production and Preview, Vercel Authentication
+  disabled for the public demo.
+- The hosted seed ran against the external database URL after a temporary IP allow-list entry.
+- `CORS_ORIGIN` was set to the Vercel domain.
+
+**Verification.** `/api/health` returned `200`; a live Playwright smoke test signed in, exercised
+URL-synced search, bought a car, opened the garage and confirmed the disabled sold-out button.
+
+## 2026-10-25 — Documentation pass
+
+### 14 · Technical log, Mermaid design and README readability
+
+**Context.** `PROMPTS.md` read as a conversational transcript, and the README explained the
+architecture with a static image but no renderable diagram. Several sections repeated context that a
+first-time reader did not need.
+
+**Prompt.**
+
+> Rewrite `PROMPTS.md` as a technical engineering log instead of a chat transcript. Keep the context,
+> prompt, implementation and verification for each entry. Then add an intermediate Mermaid system
+> diagram and a purchase sequence to the README, and tighten the README so it's easier to scan without
+> losing the setup, API, testing or deployment details.
+
+**Implementation.**
+
+- `PROMPTS.md` restated as 14 technical entries with plain-English prompts and concrete evidence.
+- The README gains a layered Mermaid flowchart and a collapsible purchase sequence diagram.
+- The README is reorganized into scannable sections: at-a-glance table, split customer/admin
+  capabilities, system design, linear setup, troubleshooting, commands, API, testing, decisions and
+  deployment.
+- The AI-usage summary is compressed into a compact problem / prompt / fix / verification list.
+
+**Verification.** Prettier check on both files, Markdown link check, Mermaid syntax review, and a
+read-through against the source for endpoint, script and path accuracy.
