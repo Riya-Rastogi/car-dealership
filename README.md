@@ -12,14 +12,6 @@ test, then the smallest implementation that made it pass.
 
 ## Architecture at a glance
 
-[![Autoline system design: the React SPA is served by Vercel and calls an Express API on Render, which applies CORS and JWT auth, routes requests through services and Drizzle repositories, and reads and writes PostgreSQL tables for users, vehicles and purchases](docs/system-design.png)](docs/system-design.svg)
-
-React SPA on Vercel → Express API on Render → PostgreSQL 16. The [System design](#system-design)
-section explains the request path and each layer. Click the image for the vector version.
-
-<details>
-<summary><strong>Mermaid source</strong></summary>
-
 ```mermaid
 flowchart TB
     subgraph Client["Client"]
@@ -60,6 +52,14 @@ flowchart TB
     Contract -.->|"compile-time contract"| SPA
     Contract -.->|"request validation"| Routers
 ```
+
+React SPA on Vercel → Express API on Render → PostgreSQL 16. The [System design](#system-design)
+section explains the request path and each layer.
+
+<details>
+<summary><strong>Image version (for viewers without Mermaid)</strong></summary>
+
+[![Autoline system design: the React SPA is served by Vercel and calls an Express API on Render, which applies CORS and JWT auth, routes requests through services and Drizzle repositories, and reads and writes PostgreSQL tables for users, vehicles and purchases](docs/system-design.png)](docs/system-design.svg)
 
 </details>
 
