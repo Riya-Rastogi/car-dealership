@@ -10,6 +10,59 @@ test, then the smallest implementation that made it pass.
 **Live demo:** [car-dealership-nu-six.vercel.app](https://car-dealership-nu-six.vercel.app) ·
 **API health:** [autoline-api.onrender.com/api/health](https://autoline-api.onrender.com/api/health)
 
+## Architecture at a glance
+
+[![Autoline system design: the React SPA is served by Vercel and calls an Express API on Render, which applies CORS and JWT auth, routes requests through services and Drizzle repositories, and reads and writes PostgreSQL tables for users, vehicles and purchases](docs/system-design.png)](docs/system-design.svg)
+
+React SPA on Vercel → Express API on Render → PostgreSQL 16. The [System design](#system-design)
+section explains the request path and each layer. Click the image for the vector version.
+
+<details>
+<summary><strong>Mermaid source</strong></summary>
+
+```mermaid
+flowchart TB
+    subgraph Client["Client"]
+        SPA["React 19 SPA<br/>Vite · Tailwind v4 · TanStack Query"]
+        Token["JWT in localStorage"]
+    end
+
+    subgraph Hosting["Static hosting"]
+        Vercel["Vercel CDN<br/>apps/web/dist"]
+    end
+
+    subgraph API["Express 5 API on Render"]
+        Middleware["Middleware<br/>CORS allowlist · JSON parser · error envelope"]
+        Guards["Auth guards<br/>requireAuth · requireAdmin"]
+        Routers["Routers<br/>auth · vehicles · inventory"]
+        Services["Services<br/>stock · pricing · ownership rules"]
+        Repositories["Repositories<br/>Drizzle ORM"]
+    end
+
+    subgraph DB["PostgreSQL 16"]
+        Users[("users")]
+        Vehicles[("vehicles")]
+        Purchases[("purchases")]
+    end
+
+    Contract["@dealer/shared<br/>Zod schemas · types · error codes"]
+
+    Vercel -->|"serves"| SPA
+    Token -.->|"Bearer token"| SPA
+    SPA -->|"HTTPS + JSON<br/>/api/*"| Middleware
+    Middleware --> Guards
+    Guards --> Routers
+    Routers --> Services
+    Services --> Repositories
+    Repositories -->|"SQL in a transaction"| Users
+    Repositories -->|"SQL in a transaction"| Vehicles
+    Repositories -->|"SQL in a transaction"| Purchases
+    Contract -.->|"compile-time contract"| SPA
+    Contract -.->|"request validation"| Routers
+```
+
+</details>
+
 | At a glance       | Details                                                                                       |
 | ----------------- | --------------------------------------------------------------------------------------------- |
 | **Stack**         | React 19 · Vite · Tailwind CSS v4 · TanStack Query · Express 5 · Drizzle ORM · PostgreSQL 16  |
@@ -19,6 +72,7 @@ test, then the smallest implementation that made it pass.
 
 ## Contents
 
+- [Architecture at a glance](#architecture-at-a-glance)
 - [What you can do](#what-you-can-do)
 - [Demo accounts](#demo-accounts)
 - [Live demo](#live-demo)
@@ -110,56 +164,7 @@ Autoline has three runtime parts:
 - **PostgreSQL** is the memory. It keeps every car, account and purchase, even after the API
   restarts.
 
-[![Autoline system design: the React SPA is served by Vercel and calls an Express API on Render, which applies CORS and JWT auth, routes requests through services and Drizzle repositories, and reads and writes PostgreSQL tables for users, vehicles and purchases](docs/system-design.png)](docs/system-design.svg)
-
-The diagram is rendered as an image so it displays in every Markdown viewer. Click it for the vector
-version, or open the Mermaid source below to edit it.
-
-<details>
-<summary><strong>System design — Mermaid source</strong></summary>
-
-```mermaid
-flowchart TB
-    subgraph Client["Client"]
-        SPA["React 19 SPA<br/>Vite · Tailwind v4 · TanStack Query"]
-        Token["JWT in localStorage"]
-    end
-
-    subgraph Hosting["Static hosting"]
-        Vercel["Vercel CDN<br/>apps/web/dist"]
-    end
-
-    subgraph API["Express 5 API on Render"]
-        Middleware["Middleware<br/>CORS allowlist · JSON parser · error envelope"]
-        Guards["Auth guards<br/>requireAuth · requireAdmin"]
-        Routers["Routers<br/>auth · vehicles · inventory"]
-        Services["Services<br/>stock · pricing · ownership rules"]
-        Repositories["Repositories<br/>Drizzle ORM"]
-    end
-
-    subgraph DB["PostgreSQL 16"]
-        Users[("users")]
-        Vehicles[("vehicles")]
-        Purchases[("purchases")]
-    end
-
-    Contract["@dealer/shared<br/>Zod schemas · types · error codes"]
-
-    Vercel -->|"serves"| SPA
-    Token -.->|"Bearer token"| SPA
-    SPA -->|"HTTPS + JSON<br/>/api/*"| Middleware
-    Middleware --> Guards
-    Guards --> Routers
-    Routers --> Services
-    Services --> Repositories
-    Repositories -->|"SQL in a transaction"| Users
-    Repositories -->|"SQL in a transaction"| Vehicles
-    Repositories -->|"SQL in a transaction"| Purchases
-    Contract -.->|"compile-time contract"| SPA
-    Contract -.->|"request validation"| Routers
-```
-
-</details>
+The diagram at the top of this README shows the full flow.
 
 ### Request path
 
